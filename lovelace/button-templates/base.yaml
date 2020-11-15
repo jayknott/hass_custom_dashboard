@@ -1,0 +1,30 @@
+aspect_ratio: 1/1
+tap_action:
+  action: toggle
+double_tap_action:
+  action: none
+hold_action:
+  action: more-info
+styles:
+  card:
+    - min-width: 100%
+    - max-width: 100%
+    - --mdc-ripple-color: var(--primary-color)
+  name:
+    - justify-self: start
+    - padding-left: 10px
+    - font-weight: bold
+    - text-align: left
+    - text-align: left
+    # - white-space: normal
+    - align-self: flex-end
+  state:
+    - font-size: smaller
+    - justify-self: start
+    - padding-left: 10px
+    - align-self: flex-end
+  label:
+    - font-size: smaller
+    - justify-self: start
+    - padding-left: 10px
+    - align-self: flex-end

@@ -1,0 +1,54 @@
+# custom_dashboard
+
+template: status_sensor
+show_state: true
+show_label: true
+state_display: >
+  [[[ return entity.state == 'heat_cool' ? '{{_custom_dashboard_trans.climate.heat_cool}}' : null ]]]
+label: >
+  [[[ return entity.attributes.temperature != null ? `${entity.attributes.temperature}°` : null ]]]
+icon_color: var(--paper-item-icon-active-color)
+icon: >
+  [[[
+      switch(entity.attributes.hvac_action) {
+        case 'heating':
+          return 'mdi:fire';
+        case 'cooling':
+          return 'mdi:snowflake';
+        case 'drying':
+          return 'mdi:weather-sunny';
+        case 'fan':
+          return 'mdi:fan';
+      }
+
+      switch(entity.state) {
+        case 'off':
+          return 'mdi:power-standby';
+        case 'heat':
+          return 'mdi:fire';
+        case 'cool':
+          return 'mdi:snowflake';
+      }
+
+      return 'mdi:thermostat';
+    ]]]
+tap_action:
+  action: more-info
+styles:
+  grid:
+    - grid-template-areas: '"i i" "s l"'
+    - grid-template-columns: 1fr 1fr
+    - grid-template-rows: 1fr min-content
+  icon:
+    - color: >
+        [[[
+          return entity.attributes.hvac_action == 'idle'
+            ? 'var(--paper-item-icon-color)'
+            : 'var(--paper-item-icon-active-color)'
+        ]]]
+  label:
+    - justify-self: end
+    - padding-left: 0
+    - padding-right: 5px
+  state:
+    - padding-right: 5px

@@ -1,0 +1,18 @@
+template:
+  - status_sensor
+show_state: false
+color: var(--error-state-color)
+icon: mdi:shield-alert
+state:
+  - operator: template
+    value: "[[[ return ['locked', 'closed', 'off'].includes(entity.state) ]]]"
+    icon: mdi:shield-check
+    color: var(--paper-item-icon-color)
+    styles:
+      card:
+        - border-color: var(--card-background-color)
+styles:
+  card:
+    - border-width: 2px
+    - border-style: solid
+    - border-color: var(--error-state-color)

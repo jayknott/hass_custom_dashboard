@@ -1,0 +1,36 @@
+template: base
+aspect_ratio: null
+show_name: false
+size: 60%
+tap_action:
+  action: navigate
+hold_action:
+  action: none
+custom_fields:
+  counter: >
+    [[[
+      let count = parseInt(entity.attributes.count || 0);
+      return count >= 100 ? '99+' : count;
+      ]]]
+styles:
+  card:
+    - width: 87px
+    - height: 87px
+    - overflow: visible
+    - border-width: 1px
+    - border-style: solid
+    - border-color: var(--card-background-color)
+  custom_fields:
+    counter:
+      - position: absolute
+      - top: 5px
+      - right: 5px
+      - min-width: 12px
+      - min-height: 12px
+      - background-color: var(--accent-color)
+      - color: var(--text-primary-color)
+      - font-size: 10px
+      - border-radius: 18px
+      - padding: 3px 3px
+      - opacity: '[[[ return (entity.attributes.count || 0) > 0 ? 1 : 0 ]]]'
+      - transition: 'opacity 300ms'

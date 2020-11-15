@@ -1,0 +1,115 @@
+# custom_dashboard
+
+{% set area = area | from_json %}
+
+type: custom:button-card
+template: base
+aspect_ratio: null
+name: {{ area.name }}
+icon: {{ area.icon }}
+color: 'var(--primary-color)'
+triggers_update:
+  - binary_sensor.custom_dashboard_area_{{area.id}}_light
+  - binary_sensor.custom_dashboard_area_{{area.id}}_something_on
+  - binary_sensor.custom_dashboard_area_{{area.id}}_motion
+  - binary_sensor.custom_dashboard_area_{{area.id}}_security
+tap_action:
+  action: navigate
+  navigation_path: "room_{{ area.name | lower | replace(' ', '_') }}"
+hold_action:
+  action: none
+double_tap_action:
+  action: none
+custom_fields:
+  lights: >
+    [[[
+      let light_state = states['binary_sensor.custom_dashboard_area_{{area.id}}_light'];
+      return `
+        <ha-icon
+          icon="hass:lightbulb"
+          style="width: 20px; height: 20px; color: var(
+            ${
+              light_state.attributes.tracked_entity_count == 0
+                ? '--state-icon-unavailable-color'
+                : (light_state.state == 'on'
+                    ? '--paper-item-icon-active-color'
+                    : '--paper-item-icon-color'
+            )}
+          ); opacity: ${light_state.attributes.tracked_entity_count == 0 ? 0.2 : 0.8}"
+        />`;
+    ]]]
+  media: >
+    [[[
+      let media_state = states['binary_sensor.custom_dashboard_area_{{area.id}}_something_on'];
+      return `
+        <ha-icon
+          icon="mdi:play-circle"
+          style="width: 20px; height: 20px; color: var(
+            ${
+              media_state.attributes.tracked_entity_count == 0
+                ? '--state-icon-unavailable-color'
+                : (media_state.state == 'on'
+                    ? '--paper-item-icon-active-color'
+                    : '--paper-item-icon-color'
+            )}
+          ); opacity: ${media_state.attributes.tracked_entity_count == 0 ? 0.2 : 0.8}"
+        />`;
+    ]]]
+  motion: >
+    [[[
+      let motion_state = states['binary_sensor.custom_dashboard_area_{{area.id}}_motion'];
+      return `
+        <ha-icon
+          icon="mdi:run"
+          style="width: 20px; height: 20px; color: var(
+            ${
+              motion_state.attributes.tracked_entity_count == 0
+                ? '--state-icon-unavailable-color'
+                : (motion_state.state == 'on'
+                    ? '--paper-item-icon-active-color'
+                    : '--paper-item-icon-color'
+            )}
+          ); opacity: ${motion_state.attributes.tracked_entity_count == 0 ? 0.2 : 0.8}"
+        />`;
+    ]]]
+  unsecured: >
+    [[[
+      let security_state = states['binary_sensor.custom_dashboard_area_{{area.id}}_security'];
+      return `
+        <ha-icon
+          icon=${security_state.state == 'on' ? 'mdi:shield-alert' : 'mdi:shield-check'}
+          style="width: 20px; height: 20px; color: var(
+            ${
+              security_state.attributes.tracked_entity_count == 0
+                ? '--state-icon-unavailable-color'
+                : (security_state.state == 'on'
+                    ? '--error-state-color'
+                    : '--paper-item-icon-color'
+            )}
+          ); opacity: ${security_state.attributes.tracked_entity_count == 0 ? 0.2 : 0.8}"
+        />`;
+    ]]]
+styles:
+  card:
+    - width: 185px
+    - height: 140px
+  name:
+    - justify-self: center
+    - padding-right: 10px
+  grid:
+    - grid-template-areas: '"i i i i i i" "space1 lights media motion unsecured space2" "n n n n n n"'
+    - grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr
+    - grid-template-rows: 1fr min-content min-content
+  custom_fields:
+    lights:
+      - justify-self: center
+      - padding-bottom: 10px
+    media:
+      - justify-self: center
+      - padding-bottom: 10px
+    motion:
+      - justify-self: center
+      - padding-bottom: 10px
+    unsecured:
+      - justify-self: center
+      - padding-bottom: 10px

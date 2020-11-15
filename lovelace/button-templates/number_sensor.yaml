@@ -1,0 +1,15 @@
+template: binary_sensor
+show_state: true
+color: var(--paper-item-icon-color)
+styles:
+  card:
+    - width: 87px
+    - border-radius: 10px
+  grid:
+    - grid-template-areas: '"i s"'
+    - grid-template-columns: 45px 1fr
+    - grid-template-rows: 1fr
+  state:
+    - justify-self: end
+    - padding-left: 0
+    - padding-right: 10px

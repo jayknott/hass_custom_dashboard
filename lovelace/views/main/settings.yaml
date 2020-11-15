@@ -1,0 +1,56 @@
+# custom_dashboard
+
+{% set settings = [
+    {
+      "name": _custom_dashboard_trans.room.other,
+      "icon": "mdi:sofa",
+      "tap_action": {
+        "action": "navigate",
+        "navigation_path": "settings_areas"
+      }
+    },
+    {
+      "name": _custom_dashboard_trans.device.other,
+      "icon": "mdi:lamp",
+      "tap_action": {
+        "action": "navigate",
+        "navigation_path": "settings_entities"
+      }
+    }
+  ]
+%}
+
+panel: true
+title: {{ _custom_dashboard_trans.setting.other }}
+icon: mdi:cog
+path: settings
+cards:
+  - type: custom:mod-card
+    style:
+      $: |
+        :host {
+          padding: 12px;
+        }
+    card:
+      type: vertical-stack
+      cards:
+        - type: custom:custom-dashboard-flexbox-card
+          margin_bottom: '0'
+          cards:
+            - card:
+                !include
+                  - ../components/page_header.yaml
+                  - title: '{{ _custom_dashboard_trans.setting.other }}'
+        - type: custom:custom-dashboard-flexbox-card
+          item_height: 120
+          item_width: 120
+          cards:
+            {% for setting in settings %}
+              - card:
+                  type: custom:button-card
+                  template: setting
+                  name: {{ setting.name }}
+                  icon: {{ setting.icon | default("mdi:cog") }}
+                  tap_action: {{ setting.tap_action }}
+            {% endfor %}
+

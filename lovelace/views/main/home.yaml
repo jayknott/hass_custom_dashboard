@@ -1,0 +1,146 @@
+# custom_dashboard
+
+{% set areas = areas | from_json %}
+{% set climate_main = _custom_dashboard_entities |
+                      selectattr('visible') |
+                      selectattr('type', 'equalto', 'climate_main') |
+                      sort(attribute='sort_order,name') |
+                      list |
+                      first |
+                      default(none, true)
+%}
+{% set weather = _custom_dashboard_entities |
+                  selectattr('visible') |
+                  selectattr('type', 'equalto', 'weather') |
+                  sort(attribute='sort_order,name') |
+                  list |
+                  first |
+                  default(none, true)
+%}
+
+panel: true
+title: {{ _custom_dashboard_trans.home.one }}
+icon: mdi:home
+path: home
+cards:
+  - type: custom:mod-card
+    style:
+      $:
+        .: |
+          :host {
+            padding: 12px;
+          }
+      hui-vertical-stack-card:
+        $: |
+          #root > :first-child, #root > * {
+            margin-top: 0 !important;
+            margin-bottom: 0 !important;
+          }
+    card:
+      type: vertical-stack
+      cards:
+        {% if states is defined %}
+        {% if true %}
+        - type: custom:custom-dashboard-flexbox-card
+          margin_bottom: '0'
+          cards:
+            - card:
+                !include
+                  - ../components/entity_button.yaml
+                  - entity: binary_sensor.custom_dashboard_security
+                    template: status_security
+            - card:
+                !include
+                  - ../components/entity_button.yaml
+                  - entity: binary_sensor.custom_dashboard_light
+                    template: status_sensor
+                    icon: hass:lightbulb
+            - card:
+                !include
+                  - ../components/entity_button.yaml
+                  - entity: binary_sensor.custom_dashboard_something_on
+                    template: status_sensor
+                    icon: mdi:play-circle
+            {% if climate_main is not none %}
+            - card:
+                !include
+                  - ../components/entity_button.yaml
+                  - entity: {{ climate_main.entity_id }}
+                    template: status_climate
+            {% endif %}
+        {% if climate_main is not none or weather is not none %}
+        - type: custom:custom-dashboard-flexbox-card
+          margin_bottom: '0'
+          cards:
+            - card:
+                !include
+                  - ../components/entity_button.yaml
+                  - entity: {{ climate_main.entity_id }}
+                    template: number_sensor
+                    icon: mdi:thermometer
+                    state_display: >
+                      [[[
+                        try {
+                          return `${Math.round(parseFloat(entity.attributes.current_temperature))}°`;
+                        } catch {
+                          return '--°';
+                        }
+                        ]]]
+            {% if state_attr(climate_main.entity_id, 'current_humidity') is not none %}
+            - card:
+                !include
+                  - ../components/entity_button.yaml
+                  - template: number_sensor
+                    entity: {{ climate_main.entity_id }}
+                    icon: mdi:water-percent
+                    state_display: >
+                      [[[
+                        try {
+                          return `${Math.round(parseFloat(entity.attributes.current_humidity))}%`;
+                        } catch {
+                          return '--%';
+                        }
+                        ]]]
+            {% endif %}
+            {% if weather is not none %}
+            - card:
+                !include
+                  - ../components/entity_button.yaml
+                  - template: weather_small
+                    entity: {{ weather.entity_id }}
+            {% endif %}
+        {% endif %}
+        {% endif %}
+        {% if states.person and (states.person | length) > 0 %}
+        - !include
+          - ../components/section_header.yaml
+          - title: "{{ _custom_dashboard_trans.person.other }}"
+        - type: custom:custom-dashboard-flexbox-card
+          cards:
+            {% for person in states.person %}
+            - card:
+                type: custom:button-card
+                template: person
+                entity: {{ person.entity_id }}
+            {% endfor %}
+        {% endif %}
+        {% if areas and (areas | length) >= 1 %}
+        - !include
+          - ../components/section_header.yaml
+          - title: {{ _custom_dashboard_trans.room.other }}
+        - type: custom:custom-dashboard-flexbox-card
+          cards:
+          {% for area in areas %}
+            - card:
+                !include
+                  - ../components/area_button.yaml
+                  - area: >
+                      {{ area | to_json }}
+          {% endfor %}
+        {% endif %}
+        {% else %}
+        - !include
+          - ../components/section_header.yaml
+          - title: State is not defined
+        {% endif %}
+

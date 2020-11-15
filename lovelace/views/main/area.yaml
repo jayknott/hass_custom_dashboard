@@ -1,0 +1,278 @@
+# custom_dashboard
+
+{% set area = area | from_json %}
+{% set room_name = area.name %}
+{% set room_slug = room_name | lower | replace(" ", "_") %}
+
+{% set entities = _custom_dashboard_entities | selectattr('area_id', 'equalto', area.id) | selectattr('visible') | list %}
+{% set security = entities | selectattr('type', 'in', ['security_lock', 'security_opening']) | sort(attribute='sort_order,name') | list %}
+{% set motion_sensors = entities | selectattr('type', 'in', ['motion', 'occupancy']) | sort(attribute='sort_order,name') | list %}
+{% set temperatures = entities | selectattr('type', 'equalto', 'temperature') | sort(attribute='sort_order,name') | list %}
+{% set humidities = entities | selectattr('type', 'equalto', 'humidity') | sort(attribute='sort_order,name') | list %}
+{% set climates = entities | selectattr('type', 'equalto', 'climate') | sort(attribute='sort_order,name') | list %}
+{% set all_lights = entities | selectattr('type', 'equalto', 'all_lights') | sort(attribute='sort_order,name') | list %}
+{% set lights = entities | selectattr('type', 'equalto', 'light') | sort(attribute='sort_order,name') | list %}
+{% set switches = entities | selectattr('type', 'equalto', 'switch') | sort(attribute='sort_order,name') | list %}
+{% set remotes = entities | selectattr('type', 'equalto', 'remote') | sort(attribute='sort_order,name') | list %}
+{% set remote_buttons = entities | selectattr('type', 'equalto', 'remote_button') | sort(attribute='sort_order,name') | list %}
+{% set media_players = entities | selectattr('type', 'in', ['media_player', 'media_player_no_volume']) | sort(attribute='sort_order,name') | list %}
+{% set cameras = entities | selectattr('type', 'equalto', 'camera') | sort(attribute='sort_order,name') | list %}
+
+{%
+  set handled_types = [
+    'all_lights',
+    'camera',
+    'climate',
+    'climate_main',
+    'humidity',
+    'light',
+    'media_player',
+    'media_player_no_volume',
+    'motion',
+    'occupancy',
+    'remote',
+    'remote_button',
+    'security_lock',
+    'security_opening',
+    'sensor',
+    'temperature',
+  ]
+%}
+
+{% set other_devices = entities | rejectattr('type', 'in', handled_types) | sort(attribute='sort_order,name') | list %}
+
+panel: true
+title: {{ room_name }}
+icon: mdi:square
+path: {{ 'room_' + room_slug }}
+visible: false
+cards:
+  - type: custom:mod-card
+    style:
+      $:
+        .: |
+          :host {
+            padding: 12px;
+          }
+      hui-vertical-stack-card:
+        $: |
+          #root > :first-child, #root > * {
+            margin-top: 0 !important;
+            margin-bottom: 0 !important;
+          }
+    card:
+      type: vertical-stack
+      cards:
+        - !include
+          - ../components/page_header.yaml
+          - title: {{ room_name }}
+
+        {% if (motion_sensors and (motion_sensors | length > 0)) or (doorbells and (doorbells | length > 0)) %}
+        - type: custom:custom-dashboard-flexbox-card
+          cards:
+            {% for motion_sensor in motion_sensors %}
+            - card:
+                !include
+                  - ../components/entity_button.yaml
+                  - template: binary_sensor
+                    entity: {{ motion_sensor.entity_id }}
+            {% endfor %}
+            {% for climate in climates %}
+            - card:
+                !include
+                  - ../components/entity_button.yaml
+                  - template: climate
+                    entity: {{ climate.entity_id }}
+            {% if state_attr(climate.entity_id, 'current_temperature') is not none %}
+            - card:
+                !include
+                  - ../components/entity_button.yaml
+                  - template: number_sensor
+                    entity: {{ climate.entity_id }}
+                    icon: mdi:thermometer
+                    state_display: >
+                      [[[
+                        try {
+                          return `${Math.round(parseFloat(entity.attributes.current_temperature))}°`;
+                        } catch {
+                          return '--°';
+                        }
+                        ]]]
+            {% endif %}
+            {% if state_attr(climate.entity_id, 'current_humidity') is not none %}
+            - card:
+                !include
+                  - ../components/entity_button.yaml
+                  - template: number_sensor
+                    entity: {{ climate.entity_id }}
+                    icon: mdi:water-percent
+                    state_display: >
+                      [[[
+                        try {
+                          return `${Math.round(parseFloat(entity.attributes.current_humidity))}%`;
+                        } catch {
+                          return '--%';
+                        }
+                        ]]]
+            {% endif %}
+            {% endfor %}
+            {% for temperature in temperatures %}
+            - card:
+                !include
+                  - ../components/entity_button.yaml
+                  - template: number_sensor
+                    entity: {{ temperature.entity_id }}
+                    state_display: >
+                      [[[
+                        try {
+                          return `${Math.round(parseFloat(entity.state))}°`;
+                        } catch {
+                          return '--°';
+                        }
+                        ]]]
+            {% endfor %}
+            {% for humidity in humidities %}
+            - card:
+                !include
+                  - ../components/entity_button.yaml
+                  - template: number_sensor
+                    entity: {{ humidity.entity_id }}
+                    state_display: >
+                      [[[
+                        try {
+                          return `${Math.round(parseFloat(entity.state))}%`;
+                        } catch {
+                          return '--%';
+                        }
+                        ]]]
+            {% endfor %}
+        {% endif %}
+
+        {% if security and (security | length > 0) %}
+        - type: custom:custom-dashboard-flexbox-card
+          item_height: 120
+          item_width: 120
+          cards:
+            {% for device in security %}
+            - card:
+                !include
+                  - ../components/entity_button.yaml
+                  - template: security
+                    entity: {{ device.entity_id }}
+                    room_name: {{ room_name }}
+                    entity_name: {{ _custom_dashboard_trans.lock.one }}
+                    entities_name: {{ _custom_dashboard_trans.lock.other }}
+            {% endfor %}
+        {% endif %}
+
+        {% if (all_lights and (all_lights | length > 0)) or  (lights and (lights | length) > 0) %}
+        - type: custom:custom-dashboard-flexbox-card
+          item_height: 120
+          item_width: 120
+          cards:
+              {% if lights and (lights | length > 1) %}
+              {% for light in all_lights %}
+              - card:
+                  !include
+                    - ../components/entity_button.yaml
+                    - template: light
+                      name: {{ _custom_dashboard_trans.light.all }}
+                      entity: {{ light.entity_id }}
+              {% endfor %}
+              {% endif %}
+              {% for light in lights %}
+              - card:
+                  !include
+                    - ../components/entity_button.yaml
+                    - template: light
+                      entity: {{ light.entity_id }}
+                      room_name: {{ room_name }}
+                      entity_name: {{ _custom_dashboard_trans.light.one }}
+                      entities_name: {{ _custom_dashboard_trans.light.other }}
+              {% endfor %}
+        {% endif %}
+
+        {% if ((remotes and (remotes | length) > 0) or (remote_buttons and (remote_buttons | length) > 0)) %}
+        {% if remotes and (remotes | length) > 0 %}
+        - type: custom:custom-dashboard-flexbox-card
+          item_height: 120
+          item_width: 120
+          {% if remote_buttons and (remote_buttons | length) > 0 %}
+          margin_bottom: '0'
+          {% endif %}
+          cards:
+              {% for remote in remotes %}
+              - card:
+                  !include
+                    - ../components/entity_button.yaml
+                    - template: remote
+                      entity: {{ remote.entity_id }}
+                      room_name: {{ room_name }}
+                      entity_name: {{ _custom_dashboard_trans.remote.one }}
+                      entities_name: {{ _custom_dashboard_trans.remote.other }}
+              {% endfor %}
+        {% endif %}
+        {% if remote_buttons and (remote_buttons | length) > 0 %}
+        - type: custom:custom-dashboard-flexbox-card
+          item_height: 55
+          item_width: 55
+          cards:
+              {% for remote_button in remote_buttons %}
+              - card:
+                  !include
+                    - ../components/entity_button.yaml
+                    - template: remote_button
+                      entity: {{ remote_button.entity_id }}
+              {% endfor %}
+        {% endif %}
+        {% endif %}
+
+        {% if media_players and (media_players | length) > 0 %}
+        - type: custom:custom-dashboard-flexbox-card
+
+          item_width: 380
+          cards:
+              {% for media_player in media_players %}
+              - card:
+                  !include
+                    - ../components/media_player.yaml
+                    - entity: {{ media_player.entity_id }}
+                      hide_volume: {% if media_player.type == "media_player_no_volume" %}true{% else %}false{% endif %}
+                      room_name: {{ room_name }}
+                      entity_name: {{ _custom_dashboard_trans.media_player.one }}
+                      entities_name: {{ _custom_dashboard_trans.media_player.other }}
+              {% endfor %}
+        {% endif %}
+
+        {% if cameras and (cameras | length > 0) %}
+        - type: custom:custom-dashboard-flexbox-card
+          item_height: 213.75
+          item_width: 380
+          cards:
+              {% for camera in cameras %}
+              - card:
+                  !include
+                    - ../components/entity_button.yaml
+                    - template: camera
+                      entity: {{ camera.entity_id }}
+                      room_name: {{ room_name }}
+                      entity_name: {{ _custom_dashboard_trans.camera.one }}
+                      entities_name: {{ _custom_dashboard_trans.camera.other }}
+              {% endfor %}
+        {% endif %}
+
+        {% if other_devices and (other_devices | length) > 0 %}
+        - type: custom:custom-dashboard-flexbox-card
+          item_height: 120
+          item_width: 120
+          cards:
+              {% for device in other_devices %}
+              - card:
+                  !include
+                    - ../components/entity_button.yaml
+                    - template: base
+                      entity: {{ device.entity_id }}
+                      room_name: >
+                        {{ room_name }}
+              {% endfor %}
+        {% endif %}

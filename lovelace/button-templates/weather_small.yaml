@@ -1,0 +1,132 @@
+template: binary_sensor
+show_state: true
+state_display: '[[[ return `${entity.attributes.temperature}°` ]]]'
+icon: >
+  [[[
+    let weather = {
+      'clear-night': 'mdi:weather-night',
+      cloudy: 'mdi:weather-cloudy',
+      exceptional: 'mdi:alert',
+      fog: 'mdi:weather-fog',
+      hail: 'mdi:weather-hail',
+      lightning: 'mdi:weather-lightning',
+      'lightning-rainy': 'mdi:weather-lightning-rainy',
+      partlycloudy: 'mdi:weather-partly-cloudy',
+      pouring: 'mdi:weather-pouring',
+      rainy: 'mdi:weather-rainy',
+      snowy: 'mdi:weather-snowy',
+      'snowy-rainy': 'mdi:weather-snowy-rainy',
+      sunny: 'mdi:weather-sunny',
+      windy: 'mdi:weather-windy',
+      'windy-variant': 'mdi:weather-windy-variant'
+    };
+
+    return weather[entity.state] || 'mdi:help-circle';
+  ]]]
+custom_fields:
+  temp: >
+    [[[
+      let tomorrow = new Date();
+      tomorrow.setHours(0,0,0,0);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      
+      let label = null;
+
+      if (
+        entity.attributes.forecast &&
+        entity.attributes.forecast[0].datetime &&
+        new Date(entity.attributes.forecast[0].datetime) < tomorrow
+      ) {
+        let forecast = entity.attributes.forecast[0];
+        label = `<span>${forecast.templow}°/${forecast.temperature}°</span>`;
+      }
+
+      return label;
+    ]]]
+  percip: >
+    [[[
+      let tomorrow = new Date();
+      tomorrow.setHours(0,0,0,0);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      
+      let label = null;
+
+      if (
+        entity.attributes.forecast &&
+        entity.attributes.forecast[0].datetime &&
+        new Date(entity.attributes.forecast[0].datetime) < tomorrow
+      ) {
+        let forecast = entity.attributes.forecast[0];
+        if (forecast.precipitation_probability != null) {
+          label = `
+            <ha-icon
+              icon="mdi:water"
+              style="width: 11px; height: 11px; color: var(--secondary-text-color)"
+            ></ha-icon>
+            <span>${forecast.precipitation_probability}%</span>
+          `;
+          if (parseInt(forecast.precipitation_probability) > 0 && forecast.precipitation != null) {
+            let unit = hass.config.unit_system.length == 'mi' ? '"' : 'cm';
+            label += `<span style="padding-left: 5px">${forecast.precipitation}${unit}</span>`
+          }
+        }
+      }
+
+      return label;
+    ]]]
+styles:
+  card:
+    - width: 184px
+    - border-radius: 10px
+  grid:
+    - grid-template-areas: '"i s temp" "i s percip"'
+    - grid-template-columns: 45px 1fr min-content
+    - grid-template-rows: 1fr min-content
+  state:
+    - justify-self: start
+    - padding-left: 0
+    # - padding-right: 5px
+  icon:
+    - color: >
+        [[[
+          let colors = {
+            alert: 'var(--error-state-color)',
+            cloud: 'var(--weather-icon-cloud-back-color, #d4d4d4)',
+            moon: 'var(--weather-icon-moon-color, #fcf497)',
+            rain: 'var(--weather-icon-rain-color, #30b3ff)',
+            sun: 'var(--weather-icon-sun-color, #fdd93c)'
+          };
+          let weather = {
+            'clear-night': colors['moon'],
+            cloudy: colors['cloud'],
+            exceptional: colors['alert'],
+            fog: colors['cloud'],
+            hail: colors['rain'],
+            lightning: colors['rain'],
+            'lightning-rainy': colors['rain'],
+            partlycloudy: colors['cloud'],
+            pouring: colors['rain'],
+            rainy: colors['rain'],
+            snowy: colors['rain'],
+            'snowy-rainy': colors['rain'],
+            sunny: colors['sun'],
+            windy: colors['cloud'],
+            'windy-variant': colors['cloud']
+          };
+
+          return weather[entity.state] || 'var(--paper-item-icon-color)';
+        ]]]
+  custom_fields:
+    temp:
+      - justify-self: end
+      - color: var(--secondary-text-color)
+      - padding-left: 0
+      - padding-right: 5px
+      - font-size: 12px
+    percip:
+      - justify-self: end
+      - color: var(--secondary-text-color)
+      - padding-left: 0
+      - padding-right: 5px
+      - font-size: 12px
+  

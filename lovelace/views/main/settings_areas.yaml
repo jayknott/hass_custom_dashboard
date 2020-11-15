@@ -1,0 +1,58 @@
+# custom_dashboard
+
+{% set title = _custom_dashboard_trans.setting.other ~ " - " ~ _custom_dashboard_trans.room.other %}
+
+panel: false
+title: {{ title }}
+icon: mdi:sofa
+path: settings_areas
+visible: false
+cards:
+  - type: custom:mod-card
+    style:
+      $: |
+        :host {
+          padding: 12px;
+        }
+    card:
+      type: vertical-stack
+      cards:
+        - type: custom:custom-dashboard-flexbox-card
+          margin_bottom: '0'
+          cards:
+            - card:
+                !include
+                  - ../components/page_header.yaml
+                  - title: '{{ title }}'
+        - type: entities
+          entities:
+            - entity: {{ _custom_dashboard_built_in_entities.area_select }}
+              name: {{ _custom_dashboard_trans.room.one }}
+            - entity: {{ _custom_dashboard_built_in_entities.area_icon }}
+              name: {{ _custom_dashboard_trans.icon.one }}
+            - entity: {{ _custom_dashboard_built_in_entities.area_name }}
+              name: {{ _custom_dashboard_trans.name.one }}
+            - entity: {{ _custom_dashboard_built_in_entities.area_sort_order }}
+              name: {{ _custom_dashboard_trans.sort_order.one }}
+            - entity: {{ _custom_dashboard_built_in_entities.area_visible }}
+              name: {{ _custom_dashboard_trans.visible.one }}
+        - type: custom:button-card
+          template: action
+          name: {{ _custom_dashboard_trans.save.one }}
+          tap_action:
+            service: {{ _custom_dashboard_services.set_area }}
+            service_data:
+              area_name: '[[[ return states["{{ _custom_dashboard_built_in_entities.area_select }}"].state ]]]'
+              icon: '[[[ return states["{{ _custom_dashboard_built_in_entities.area_icon }}"].state ]]]'
+              name: '[[[ return states["{{ _custom_dashboard_built_in_entities.area_name }}"].state ]]]'
+              sort_order: '[[[ return states["{{ _custom_dashboard_built_in_entities.area_sort_order }}"].state ]]]'
+              visible: '[[[ return states["{{ _custom_dashboard_built_in_entities.area_visible }}"].state ]]]'
+
+
+
+
+
+
+
+
+

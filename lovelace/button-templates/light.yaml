@@ -1,0 +1,32 @@
+template: base
+show_state: true
+custom_fields:
+  percent: >
+    [[[
+      return entity.attributes.brightness == null
+        ? ''
+        : `${Math.floor(entity.attributes.brightness / 255 * 100)}%`
+    ]]]
+  color: >
+    [[[
+      return entity.attributes.rgb_color == null
+              ? ''
+              : `<ha-icon
+                  icon="hass:lightbulb"
+                  style="width: 20px; height: 20px; color: rgb(${entity.attributes.rgb_color.join(', ')});"
+                />`
+    ]]]
+styles:
+  grid:
+    - grid-template-areas: '"i i" "n n" "s percent"'
+    - grid-template-columns: 1fr min-content
+    - grid-template-rows: 1fr min-content min-content
+  custom_fields:
+    color:
+      - position: absolute
+        top: 10px
+        right: 10px
+    percent:
+      - font-size: smaller
+      - justify-self: end
+      - padding-right: 10px

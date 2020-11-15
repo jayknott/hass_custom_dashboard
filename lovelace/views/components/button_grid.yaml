@@ -1,0 +1,13 @@
+# custom_dashboard
+
+type: custom:mod-card
+style:
+  $: |
+    :host {
+      background-color: blue !important;
+    }
+card:
+  type: custom:layout-card
+  layout: horizontal
+  justify_content: left
+  cards: {{ cards|default('[]')| from_json }}

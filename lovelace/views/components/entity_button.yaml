@@ -1,0 +1,178 @@
+# custom_dashboard
+
+{% set friendly_name = state_attr(entity, 'friendly_name') | default(_custom_dashboard_trans.device.one, true) %}
+{% if name is defined %}
+  {% set display_name = name %}
+{% else %}
+  {% set display_name = friendly_name %}
+  {% if room_name is defined and entity_name is defined and entities_name is defined %}
+    {% 
+      set display_name =
+        display_name |
+        regex_replace(find=room_name + ' | ' + room_name , replace='', ignorecase=True) |
+        regex_replace(find=entities_name + ' | ' + entities_name , replace='', ignorecase=True) |
+        regex_replace(find=entity_name + ' | ' + entity_name , replace='', ignorecase=True)
+        
+    %}
+  {% endif %}
+  {% if entity_name_2 is defined and entities_name_2 is defined %}
+    {% 
+      set display_name =
+        display_name |
+        regex_replace(find=entities_name_2 + ' | ' + entities_name_2 , replace='', ignorecase=True) |
+        regex_replace(find=entity_name_2 + ' | ' + entity_name_2 , replace='', ignorecase=True)
+    %}
+  {% endif %}
+{% endif %}
+
+type: custom:button-card
+template: {{ template }}
+entity: {{ entity }}
+name: {{ display_name }}
+{% if icon is defined %}
+icon: {{ icon }}
+{% endif %}
+{% if state_display is defined %}
+state_display: >
+  {{ state_display }}
+{% endif %}
+{% if color is defined %}
+color: >
+  {{ color }}
+{% endif %}
+
+{% if template == 'light' %}
+tap_action:
+  action: toggle
+double_tap_action:
+  action: none
+hold_action:
+  action: call-service
+  service: browser_mod.popup
+  service_data:
+    title: {{ friendly_name }}
+    style:
+      .: |
+        :host {
+          --mdc-theme-surface: transparent;
+          --secondary-background-color: transparent;
+          --ha-card-background: transparent;
+          --mdc-dialog-scrim-color: var(--primary-background-color);
+          --mdc-dialog-min-height: 100%;
+          --mdc-dialog-min-width: 100%;
+          --mdc-dialog-max-width: 100%;
+          --mdc-dialog-box-shadow: none;
+        }
+        app-header, app-toolbar {
+          background-color: transparent !important;
+        }
+
+        mwc-icon-button, .main-title {
+          color: var(--primary-text-color);
+        }
+      $: |
+        .mdc-dialog--open .mdc-dialog__scrim {
+          opacity: .9 !important;
+        }
+      light-popup-card:
+        $: |
+          #brightnessValue {
+            color: var(--primary-text-color);
+          }
+          
+          ha-icon {
+            color: var(--paper-item-icon-color);
+          }
+
+          .range-holder input[type="range"] {
+            border-radius: 30px !important;
+          }
+
+          .action-holder .action .name {
+            color: var(--primary-text-color) !important;
+          }
+
+          .color {
+            border-color: rgba(128, 128, 128, .3) !important;
+          }
+    card:
+      type: custom:light-popup-card
+      entity: {{ entity }}
+      displayType: auto
+      fullscreen: false
+      actionsInARow: 4
+      settings: true
+      settingsPosition: bottom
+      settingsCard:
+        type: custom:light-entity-card
+        cardOptions:
+          entity: {{ entity }}
+          persist_features: true
+          child_card: true
+          consolidate_entities: true
+          hide_header: true
+    {% if "{:b}".format(state_attr(entity, "supported_features"))[-5] == "1" %}
+      actions:
+      {%
+          set default_colors = [
+            {
+              "color": "#ffffff",
+              "service_color": "#ffffff",
+              "name": _custom_dashboard_trans.color.white
+            },
+            {
+              "color": "#fcfcff",
+              "service_color": "#fcfcff",
+              "name": _custom_dashboard_trans.color.daylight
+            },
+            {
+              "color": "#d4ebff",
+              "service_color": "#d4ebff",
+              "name": _custom_dashboard_trans.color.cool
+            },
+            {
+              "color": "#ffc58f",
+              "service_color": "#ffc58f",
+              "name": _custom_dashboard_trans.color.warm
+            },
+            { 
+              "color": "#00bfff",
+              "service_color": "#00bfff",
+              "name": _custom_dashboard_trans.color.dodger_blue
+            },
+            { 
+              "color": "#0000ff",
+              "service_color": "#0000ff",
+              "name": _custom_dashboard_trans.color.blue
+            },
+            { 
+              "color": "#00ff00",
+              "service_color": "#00ff00",
+              "name": _custom_dashboard_trans.color.green
+            },
+            { 
+              "color": "#a700ff",
+              "service_color": "#a700ff",
+              "name": _custom_dashboard_trans.color.black
+            }
+          ]
+      %}
+      {% for color in default_colors %}
+        {% set display_color = state_attr(entity, 'service_color_' ~ loop.index) | default(state_attr(entity, 'service_color_' ~ loop.index) | default(color.color, true), true) %}
+        {% set service_color = state_attr(entity, 'color_' ~ loop.index) | default(state_attr(entity, 'service_color_' ~ loop.index) | default(color.service_color, true), true) %}
+        {% set color_name = color.name %}
+        {% if state_attr(entity, 'service_color_' ~ loop.index) or state_attr(entity, 'color_' ~ loop.index) %}
+          {% set color_name = state_attr(entity, 'color_name_' ~ loop.index) | default('') %}
+        {% endif %}
+        - service: light.turn_on
+          service_data:
+            entity_id: {{ entity }}
+            rgb_color: {{ [service_color[1:3] | int(base=16), service_color[3:5] | int(base=16), service_color[5:7] | int(base=16)] }}
+          color: "{{ display_color }}"
+          name: "{{ color_name }}"
+      {% endfor %}
+    {% endif %}
+    deviceID:
+      - this
+  haptic: heavy
+{% endif %}

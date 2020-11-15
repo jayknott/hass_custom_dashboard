@@ -1,0 +1,10 @@
+template: base
+show_state: true
+state_display: >
+    [[[
+      let powerOffStates = ['poweroff'];
+      let activity = entity.attributes.current_activity;
+      if (activity == null || powerOffStates.includes(activity.toLowerCase())) return null;
+
+      return activity;
+    ]]]

@@ -1,0 +1,34 @@
+template: binary_sensor
+icon: >
+    [[[
+      switch(entity.attributes.hvac_action) {
+        case 'heating':
+          return 'mdi:fire';
+        case 'cooling':
+          return 'mdi:snowflake';
+        case 'drying':
+          return 'mdi:weather-sunny';
+        case 'fan':
+          return 'mdi:fan';
+      }
+
+      switch(entity.state) {
+        case 'off':
+          return 'mdi:power-standby';
+        case 'heat':
+          return 'mdi:fire';
+        case 'cool':
+          return 'mdi:snowflake';
+      }
+
+      return 'mdi:thermostat';
+    ]]]
+icon_color: var(--paper-item-icon-active-color)
+styles:
+  icon:
+    - color: >
+        [[[
+          return entity.attributes.hvac_action == 'idle'
+            ? 'var(--paper-item-icon-color)'
+            : 'var(--paper-item-icon-active-color)'
+        ]]]

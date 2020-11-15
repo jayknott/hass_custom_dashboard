@@ -1,0 +1,22 @@
+# custom_dashboard
+
+title: {{ _custom_dashboard_trans.error.one }}
+icon: mdi:alert
+path: error
+cards:
+  - type: vertical-stack
+    cards:
+      - type: markdown
+        content: "# Error"
+    {% set missing_resources = _custom_dashboard_config.missing_resources %}
+    {% if (missing_resources | length) > 0 %}
+      - type: markdown
+        content: |
+          Resources are missing from the lovelace:resources section in configuration.yaml
+
+          Please modify lovelace:resources and add the following and restart Home Assistant.
+          {% for resource in missing_resources %}
+              - url: {{ resource }}
+                type: module
+          {%- endfor %}
+    {% endif %}

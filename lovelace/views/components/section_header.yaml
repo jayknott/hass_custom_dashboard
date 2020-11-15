@@ -1,0 +1,12 @@
+# custom_dashboard
+
+type: markdown
+content: "## {{ title }}"
+style: |
+  ha-card {
+    box-shadow: none;
+    background: none;
+  }
+  ha-markdown {
+    padding: 12px 0px 6px {{ padding_left | default('0px') }} !important;
+  }

@@ -1,0 +1,11 @@
+template: base
+color: 'var(--primary-color)'
+hold_action:
+  action: none
+double_tap_action:
+  action: none
+styles:
+  grid:
+    - grid-template-areas: '"i" "n"'
+    - grid-template-columns: 1fr
+    - grid-template-rows: 1fr min-content

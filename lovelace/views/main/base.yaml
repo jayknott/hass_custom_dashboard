@@ -1,0 +1,29 @@
+# custom_dashboard
+
+{% set error = is_state(_custom_dashboard_built_in_entities.config, 'off') %}
+{% set areas = _custom_dashboard_areas | selectattr('visible') | sort(attribute='sort_order,name') | list %}
+
+{% if error %}
+
+- !include error.yaml
+
+{% else %}
+
+- !include
+    - home.yaml
+    - areas: >
+        {{ areas | to_json }}
+
+- !include settings.yaml
+- !include settings_areas.yaml
+- !include settings_entities.yaml
+
+{% if areas and (areas | length) >= 1 %}
+{% for area in areas %}
+- !include
+  - area.yaml
+  - area: >
+      {{ area | to_json }}
+{% endfor %}
+{% endif %}
+{% endif %}

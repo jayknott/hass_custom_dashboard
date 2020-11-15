@@ -1,0 +1,18 @@
+{
+  "domain": "custom_dashboard",
+  "name": "Custom Dashboard",
+  "documentation": "",
+  "dependencies": [
+    "binary_sensor",
+    "browser_mod",
+    "hacs",
+    "input_boolean",
+    "input_select",
+    "input_text",
+    "lovelace"
+  ],
+  "codeowners": [],
+  "requirements": [
+    "jinja2"
+  ]
+}

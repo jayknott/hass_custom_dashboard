@@ -1,0 +1,14 @@
+color: "var(--primary-color)"
+tap_action:
+  action: call-service
+  service:
+  service_data:
+hold_action:
+  action: none
+double_tap_action:
+  action: none
+styles:
+  grid:
+    - grid-template-areas: '"n"'
+    - grid-template-columns: 1fr
+    - grid-template-rows: 1fr

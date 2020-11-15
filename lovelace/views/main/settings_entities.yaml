@@ -1,0 +1,58 @@
+# custom_dashboard
+
+{% set title = _custom_dashboard_trans.setting.other ~ " - " ~ _custom_dashboard_trans.device.other %}
+
+panel: false
+title: {{ title }}
+icon: mdi:lamp
+path: settings_entities
+visible: false
+cards:
+  - type: custom:mod-card
+    style:
+      $: |
+        :host {
+          padding: 12px;
+        }
+    card:
+      type: vertical-stack
+      cards:
+        - type: custom:custom-dashboard-flexbox-card
+          margin_bottom: '0'
+          cards:
+            - card:
+                !include
+                  - ../components/page_header.yaml
+                  - title: '{{ title }}'
+        - type: entities
+          entities:
+            - entity: {{ _custom_dashboard_built_in_entities.entity_id_select }}
+              name: {{ _custom_dashboard_trans.device.one }}
+            - entity: {{ _custom_dashboard_built_in_entities.entity_area_select }}
+              name: {{ _custom_dashboard_trans.room.one }}
+            - entity: {{ _custom_dashboard_built_in_entities.entity_type_select }}
+              name: {{ _custom_dashboard_trans.type.one }}
+            - entity: {{ _custom_dashboard_built_in_entities.entity_sort_order }}
+              name: {{ _custom_dashboard_trans.sort_order.one }}
+            - entity: {{ _custom_dashboard_built_in_entities.entity_visible }}
+              name: {{ _custom_dashboard_trans.visible.one }}
+        - type: custom:button-card
+          template: action
+          name: {{ _custom_dashboard_trans.save.one }}
+          tap_action:
+            service: {{ _custom_dashboard_services.set_entity }}
+            service_data:
+              entity_id: '[[[ return states["{{ _custom_dashboard_built_in_entities.entity_id_select }}"].state ]]]'
+              area_name: '[[[ return states["{{ _custom_dashboard_built_in_entities.entity_area_select }}"].state ]]]'
+              type: '[[[ return states["{{ _custom_dashboard_built_in_entities.entity_type_select }}"].state ]]]'
+              sort_order: '[[[ return states["{{ _custom_dashboard_built_in_entities.entity_sort_order }}"].state ]]]'
+              visible: '[[[ return states["{{ _custom_dashboard_built_in_entities.entity_visible }}"].state ]]]'
+
+
+
+
+
+
+
+
+
