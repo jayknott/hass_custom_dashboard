@@ -6,6 +6,7 @@ from homeassistant.const import (
     ATTR_ID,
     ATTR_AREA_ID,
     CONF_ENTITY_ID,
+    CONF_FRIENDLY_NAME,
     CONF_TYPE,
     CONF_VALUE_TEMPLATE,
     CONF_STATE,
@@ -30,6 +31,7 @@ from .const import (
     SECURITY_ENTITY_TYPE_OFF_STATES,
     SECURITY_ENTITY_TYPES,
     SOMETHING_ON_ENTITY_TYPES,
+    TITLE,
     TRACKED_ENTITY_TYPE_ON_STATES,
     TRACKED_ENTITY_TYPES,
 )
@@ -102,7 +104,11 @@ async def update_built_in_counters(hass):
     async def create_super_counter(entity_types, name, prefix=None, area=None):
         platform = hass.data[CONF_ENTITY_PLATFORM][PLATFORM][0]
         area_string = f"area_{area[ATTR_ID]}_" if area is not None else ""
+        area_title = f"Area {area[ATTR_ID][-5:-1]} " if area is not None else ""
         prefix_string = f"{prefix}_" if prefix is not None else ""
+        prefix_title = prefix.replace("_", " ").title()
+        name_title = name.replace("_", " ").title()
+
         device_id = f"{DOMAIN}_{area_string}{name}"
         entity_id = f"{PLATFORM}.{device_id}"
 
@@ -133,6 +139,7 @@ async def update_built_in_counters(hass):
                     hass,
                     device_id,
                     {
+                        CONF_FRIENDLY_NAME: f"{TITLE} {area_title}{prefix_title}{name_title}",
                         CONF_VALUE_TEMPLATE: Template(
                             f"{{{{ {template} | count > 0 }}}}"
                         ),
@@ -182,7 +189,7 @@ async def update_built_in_counters(hass):
 
     for area in areas:
         # for entity_type in TRACKED_ENTITY_TYPES:
-            # create_task(create_super_counter([entity_type], entity_type, None, area))
+        # create_task(create_super_counter([entity_type], entity_type, None, area))
 
         create_task(
             create_super_counter(
