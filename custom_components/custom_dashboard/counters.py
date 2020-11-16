@@ -7,6 +7,7 @@ from homeassistant.const import (
     ATTR_AREA_ID,
     CONF_ENTITY_ID,
     CONF_FRIENDLY_NAME,
+    CONF_ICON_TEMPLATE,
     CONF_TYPE,
     CONF_VALUE_TEMPLATE,
     CONF_STATE,
@@ -93,6 +94,7 @@ async def update_built_in_counters(hass):
                     device_id,
                     {
                         CONF_FRIENDLY_NAME: f"{TITLE} {area_title}{prefix_title}{entity_type_title}",
+                        CONF_ICON_TEMPLATE: Template("mdi:counter"),
                         CONF_VALUE_TEMPLATE: Template(
                             f"{{{{ {template} | count > 0 }}}}"
                         ),
@@ -146,6 +148,7 @@ async def update_built_in_counters(hass):
                     device_id,
                     {
                         CONF_FRIENDLY_NAME: f"{TITLE} {area_title}{name_title}",
+                        CONF_ICON_TEMPLATE: Template("mdi:counter"),
                         CONF_VALUE_TEMPLATE: Template(
                             f"{{{{ {template} | count > 0 }}}}"
                         ),
