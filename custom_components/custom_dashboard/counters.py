@@ -1,3 +1,5 @@
+from homeassistant.helpers.entity_platform import EntityPlatform
+from homeassistant.core import HomeAssistant
 import logging
 import re
 
@@ -43,11 +45,12 @@ _LOGGER = logging.getLogger(__name__)
 PLATFORM = PLATFORM_BINARY_SENSOR
 
 
-async def update_built_in_counters(hass):
+async def update_built_in_counters(hass: HomeAssistant):
     areas = await hass_areas(hass)
+    counters = []
 
     async def create_counter(entity_type, states, prefix=None, area=None, reject=False):
-        platform = hass.data[CONF_ENTITY_PLATFORM][PLATFORM][0]
+        platform: EntityPlatform = hass.data[CONF_ENTITY_PLATFORM][PLATFORM][0]
         area_string = f"area_{area[ATTR_ID]}_" if area is not None else ""
         area_title = f"Area {area[ATTR_ID][-5:-1]} " if area is not None else ""
         prefix_string = f"{prefix}_" if prefix is not None else ""
@@ -111,6 +114,8 @@ async def update_built_in_counters(hass):
             ]
         )
 
+        counters.append(entity_id)
+
     async def create_super_counter(entity_types, name, prefix=None, area=None):
         platform = hass.data[CONF_ENTITY_PLATFORM][PLATFORM][0]
         area_string = f"area_{area[ATTR_ID]}_" if area is not None else ""
@@ -128,11 +133,13 @@ async def update_built_in_counters(hass):
         entity_ids = []
         if area is None:
             regex = f"binary_sensor\\.{DOMAIN}_area_\\w+_{prefix_string}({'|'.join(entity_types)})"
+
             entity_ids = [
                 entity_id
-                for entity_id in hass.states.async_entity_ids()
-                if re.search(regex, entity_id) is not None
+                for entity_id in counters
+                if _LOGGER.warn(entity_id) is not None
             ]
+            _LOGGER.warn(regex)
         else:
             entity_ids = [
                 f"{PLATFORM}.{DOMAIN}_{area_string}{prefix_string}{entity_type}"
@@ -184,39 +191,31 @@ async def update_built_in_counters(hass):
             ]
         )
 
-    create_task = hass.async_create_task
-
     for entity_type in TRACKED_ENTITY_TYPES + SOMETHING_ON_ENTITY_TYPES:
         states = [STATE_ON] + TRACKED_ENTITY_TYPE_ON_STATES.get(entity_type, [])
         # create_task(create_counter(entity_type, states))
         for area in areas:
-            create_task(create_counter(entity_type, states, None, area))
+            await create_counter(entity_type, states, None, area)
 
     for entity_type in SECURITY_ENTITY_TYPES:
         states = [STATE_OFF] + SECURITY_ENTITY_TYPE_OFF_STATES.get(entity_type, [])
         # create_task(create_counter(entity_type, states, CONF_SECURITY, None, True))
         for area in areas:
-            create_task(create_counter(entity_type, states, CONF_SECURITY, area, True))
+            await create_counter(entity_type, states, CONF_SECURITY, area, True)
 
     for entity_type in TRACKED_ENTITY_TYPES:
-        create_task(create_super_counter([entity_type], entity_type))
+        await create_super_counter([entity_type], entity_type)
 
-    create_task(create_super_counter(SOMETHING_ON_ENTITY_TYPES, CONF_SOMETHING_ON))
-    create_task(
-        create_super_counter(SECURITY_ENTITY_TYPES, CONF_SECURITY, CONF_SECURITY)
-    )
+    await create_super_counter(SOMETHING_ON_ENTITY_TYPES, CONF_SOMETHING_ON)
+    await create_super_counter(SECURITY_ENTITY_TYPES, CONF_SECURITY, CONF_SECURITY)
 
     for area in areas:
         # for entity_type in TRACKED_ENTITY_TYPES:
         # create_task(create_super_counter([entity_type], entity_type, None, area))
 
-        create_task(
-            create_super_counter(
-                SECURITY_ENTITY_TYPES, CONF_SECURITY, CONF_SECURITY, area
-            )
+        await create_super_counter(
+            SECURITY_ENTITY_TYPES, CONF_SECURITY, CONF_SECURITY, area
         )
-        create_task(
-            create_super_counter(
-                SOMETHING_ON_ENTITY_TYPES, CONF_SOMETHING_ON, None, area
-            )
+        await create_super_counter(
+            SOMETHING_ON_ENTITY_TYPES, CONF_SOMETHING_ON, None, area
         )
