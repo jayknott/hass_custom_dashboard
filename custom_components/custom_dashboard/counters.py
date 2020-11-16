@@ -139,7 +139,6 @@ async def update_built_in_counters(hass: HomeAssistant):
                 for entity_id in counters
                 if re.search(regex, entity_id) is not None
             ]
-            _LOGGER.warn(entity_ids)
         else:
             entity_ids = [
                 f"{PLATFORM}.{DOMAIN}_{area_string}{prefix_string}{entity_type}"
