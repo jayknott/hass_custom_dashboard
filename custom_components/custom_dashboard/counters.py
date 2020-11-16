@@ -90,10 +90,17 @@ async def update_built_in_counters(hass: HomeAssistant):
         if len(entity_ids) == 0:
             return
 
-        state_entities = [
-            f"states('{entity_id}') {'not ' if reject else ''}in {states}"
-            for entity_id in entity_ids
-        ]
+        state_template = []
+        count_template = []
+        entity_template = []
+        for entity_id in entity_ids:
+            state_template.append(
+                f"states('{entity_id}') {'not ' if reject else ''}in {states}"
+            )
+            count_template.append(f"(1 if states('{entity_id}') in {states} else 0)")
+            entity_template.append(
+                f"('{entity_id}' if states('{entity_id}') in {states} else '')"
+            )
 
         # template = f"""
         #     states |
@@ -114,15 +121,17 @@ async def update_built_in_counters(hass: HomeAssistant):
                         CONF_FRIENDLY_NAME: f"{TITLE} {area_title}{prefix_title}{entity_type_title}",
                         CONF_ICON_TEMPLATE: Template("mdi:counter"),
                         CONF_VALUE_TEMPLATE: Template(
-                            f"{{{{ {' or '.join(state_entities)} }}}}"
+                            f"{{{{ {' or '.join(state_template)} }}}}"
                         ),
                         CONF_ATTRIBUTE_TEMPLATES: {
                             CONF_COUNT: Template(
-                                f"{{{{ states | selectattr('{CONF_ENTITY_ID}', 'in', {entity_ids}) | selectattr('{CONF_STATE}', 'in', {states}) | list | count }}}}"
+                                f"{{{{ {' + '.join(count_template)} }}}}"
                             ),
                             # CONF_COUNT: Template(f"{{{{ 0 }}}}"),
                             # CONF_ENTITIES: Template(f"{{{{ {template} }}}}"),
-                            CONF_ENTITIES: Template(f"{{{{ [] }}}}"),
+                            CONF_ENTITIES: Template(
+                                f"{{{{ [{', '.join(entity_template)}] | select('!=', '') | list }}}}"
+                            ),
                             CONF_TRACKED_ENTITY_COUNT: Template(
                                 f"{{{{ {len(entity_ids)} }}}}"
                             ),
