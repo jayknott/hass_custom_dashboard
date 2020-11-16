@@ -76,6 +76,7 @@ from .const import (
     PLATFORM_INPUT_NUMBER,
     PLATFORM_INPUT_SELECT,
     PLATFORM_INPUT_TEXT,
+    TITLE,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -128,7 +129,7 @@ async def update_built_in_automations(hass, force=False):
                 hass,
                 f"{DOMAIN}_{BUILT_IN_AUTOMATION_POPULATE_AREA_SELECT}",
                 {
-                    CONF_ALIAS: "Update Area Selector",
+                    CONF_ALIAS: f"{TITLE} update Area Selector",
                     CONF_TRIGGER: [
                         {
                             CONF_PLATFORM: "event",
@@ -189,7 +190,7 @@ async def update_built_in_automations(hass, force=False):
                 hass,
                 f"{DOMAIN}_{BUILT_IN_AUTOMATION_POPULATE_ENTITY_SELECT}",
                 {
-                    CONF_ALIAS: "Update Entity Selector",
+                    CONF_ALIAS: f"{TITLE} update entity selector",
                     CONF_TRIGGER: [
                         {
                             CONF_PLATFORM: "event",
@@ -227,7 +228,7 @@ async def update_built_in_automations(hass, force=False):
                 hass,
                 f"{DOMAIN}_{BUILT_IN_AUTOMATION_AREA_CHANGED}",
                 {
-                    CONF_ALIAS: "Area selection changed",
+                    CONF_ALIAS: f"{TITLE} area selection changed",
                     CONF_TRIGGER: [
                         {
                             CONF_PLATFORM: "state",
@@ -348,7 +349,7 @@ async def update_built_in_automations(hass, force=False):
                 hass,
                 f"{DOMAIN}_{BUILT_IN_AUTOMATION_ENTITY_CHANGED}",
                 {
-                    CONF_ALIAS: "Entity selection changed",
+                    CONF_ALIAS: f"{TITLE} entity selection changed",
                     CONF_TRIGGER: [
                         {
                             CONF_PLATFORM: "state",
