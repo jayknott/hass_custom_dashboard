@@ -66,11 +66,11 @@ async def update_built_in_counters(hass: HomeAssistant):
         if sensor is not None and not sensor.attributes.get("restored", False):
             return
 
-        select_area = ""
-        if area is not None:
-            select_area = f", 'equalto', '{area[ATTR_ID]}'"
+        # select_area = ""
+        # if area is not None:
+        #     select_area = f", 'equalto', '{area[ATTR_ID]}'"
 
-        state_filter = "selectattr" if not reject else "rejectattr"
+        # state_filter = "selectattr" if not reject else "rejectattr"
 
         # Enter the entities seperately so the template listener will update faster
         entity_ids = [
@@ -87,13 +87,13 @@ async def update_built_in_counters(hass: HomeAssistant):
             )
         ]
 
+        if len(entity_ids) == 0:
+            return
+
         state_entities = [
             f"states('{entity_id}') {'not ' if reject else ''}in {states}"
             for entity_id in entity_ids
         ]
-
-        if len(state_entities) == 0:
-            return
 
         # available_entities_template = f"""
         #     {JINJA_VARIABLE_ENTITIES} |
@@ -171,17 +171,24 @@ async def update_built_in_counters(hass: HomeAssistant):
                 for entity_type in entity_types
             ]
 
-        available_entities_template = f"""
-            states |
-            selectattr('{CONF_ENTITY_ID}', 'in', {entity_ids}) |
-            list
-        """
+        if len(entity_ids) == 0:
+            return
 
-        template = f"""
-            {available_entities_template} |
-            selectattr('{CONF_STATE}', 'equalto', '{STATE_ON}') |
-            list
-        """
+        state_entities = [
+            f"is_state('{entity_id}', '{STATE_ON}')" for entity_id in entity_ids
+        ]
+
+        # available_entities_template = f"""
+        #     states |
+        #     selectattr('{CONF_ENTITY_ID}', 'in', {entity_ids}) |
+        #     list
+        # """
+
+        # template = f"""
+        #     {available_entities_template} |
+        #     selectattr('{CONF_STATE}', 'equalto', '{STATE_ON}') |
+        #     list
+        # """
 
         await platform.async_add_entities(
             [
@@ -192,24 +199,27 @@ async def update_built_in_counters(hass: HomeAssistant):
                         CONF_FRIENDLY_NAME: f"{TITLE} {area_title}{name_title}",
                         CONF_ICON_TEMPLATE: Template("mdi:counter"),
                         CONF_VALUE_TEMPLATE: Template(
-                            f"{{{{ {template} | count > 0 }}}}"
+                            f"{{{{ {' or '.join(state_entities)} }}}}"
                         ),
                         CONF_ATTRIBUTE_TEMPLATES: {
-                            CONF_COUNT: Template(
-                                f"{{{{ {template} | sum(attribute='attributes.{CONF_COUNT}') }}}}"
-                            ),
-                            CONF_ENTITIES: Template(
-                                f"""
-                                {{% set ns = namespace(entities=[]) %}}
-                                {{% for entities in {template} | map(attribute='attributes.{CONF_ENTITIES}') | list %}}
-                                    {{% set ns.entities = ns.entities + entities %}}
-                                {{% endfor %}}
-                                {{{{ ns.entities }}}}
-                            """
-                            ),
-                            CONF_TRACKED_ENTITY_COUNT: Template(
-                                f"{{{{ {available_entities_template} | sum(attribute='attributes.{CONF_TRACKED_ENTITY_COUNT}') }}}}"
-                            ),
+                            # CONF_COUNT: Template(
+                            #     f"{{{{ {template} | sum(attribute='attributes.{CONF_COUNT}') }}}}"
+                            # ),
+                            CONF_COUNT: Template(f"{{{{ 0 }}}}"),
+                            # CONF_ENTITIES: Template(
+                            #     f"""
+                            #     {{% set ns = namespace(entities=[]) %}}
+                            #     {{% for entities in {template} | map(attribute='attributes.{CONF_ENTITIES}') | list %}}
+                            #         {{% set ns.entities = ns.entities + entities %}}
+                            #     {{% endfor %}}
+                            #     {{{{ ns.entities }}}}
+                            # """
+                            # ),
+                            CONF_ENTITIES: Template(f"{{{{ [] }}}}"),
+                            # CONF_TRACKED_ENTITY_COUNT: Template(
+                            #     f"{{{{ {available_entities_template} | sum(attribute='attributes.{CONF_TRACKED_ENTITY_COUNT}') }}}}"
+                            # ),
+                            CONF_TRACKED_ENTITY_COUNT: Template(f"{{{{ 0 }}}}"),
                         },
                     },
                 )
