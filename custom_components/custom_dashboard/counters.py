@@ -117,8 +117,10 @@ async def update_built_in_counters(hass: HomeAssistant):
                             f"{{{{ {' or '.join(state_entities)} }}}}"
                         ),
                         CONF_ATTRIBUTE_TEMPLATES: {
-                            # CONF_COUNT: Template(f"{{{{ {template} | count }}}}"),
-                            CONF_COUNT: Template(f"{{{{ 0 }}}}"),
+                            CONF_COUNT: Template(
+                                f"{{{{ states | selectattr('{CONF_ENTITY_ID}', 'in', {entity_ids}) | selectattr('{CONF_STATE}', 'in', {states}) | list | count }}}}"
+                            ),
+                            # CONF_COUNT: Template(f"{{{{ 0 }}}}"),
                             # CONF_ENTITIES: Template(f"{{{{ {template} }}}}"),
                             CONF_ENTITIES: Template(f"{{{{ [] }}}}"),
                             CONF_TRACKED_ENTITY_COUNT: Template(
@@ -193,10 +195,10 @@ async def update_built_in_counters(hass: HomeAssistant):
                             f"{{{{ {' or '.join(state_entities)} }}}}"
                         ),
                         CONF_ATTRIBUTE_TEMPLATES: {
-                            # CONF_COUNT: Template(
-                            #     f"{{{{ {template} | sum(attribute='attributes.{CONF_COUNT}') }}}}"
-                            # ),
-                            CONF_COUNT: Template(f"{{{{ 0 }}}}"),
+                            CONF_COUNT: Template(
+                                f"{{{{ {available_entities_template} | sum(attribute='attributes.{CONF_COUNT}') }}}}"
+                            ),
+                            # CONF_COUNT: Template(f"{{{{ 0 }}}}"),
                             # CONF_ENTITIES: Template(
                             #     f"""
                             #     {{% set ns = namespace(entities=[]) %}}
