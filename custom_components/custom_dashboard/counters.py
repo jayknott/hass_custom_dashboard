@@ -88,7 +88,7 @@ async def update_built_in_counters(hass: HomeAssistant):
         ]
 
         state_entities = [
-            f"states('{entity_id}') {'not' if reject else ''}in {states}"
+            f"states('{entity_id}') {'not ' if reject else ''}in {states}"
             for entity_id in entity_ids
         ]
 
