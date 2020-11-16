@@ -47,7 +47,13 @@ async def update_built_in_counters(hass):
     async def create_counter(entity_type, states, prefix=None, area=None, reject=False):
         platform = hass.data[CONF_ENTITY_PLATFORM][PLATFORM][0]
         area_string = f"area_{area[ATTR_ID]}_" if area is not None else ""
+        area_title = f"Area {area[ATTR_ID][-5:-1]} " if area is not None else ""
         prefix_string = f"{prefix}_" if prefix is not None else ""
+        prefix_title = (
+            f"{prefix.replace('_', ' ').title()} " if prefix is not None else ""
+        )
+        entity_type_title = entity_type.replace("_", " ").title()
+
         device_id = f"{DOMAIN}_{area_string}{prefix_string}{entity_type}"
         entity_id = f"{PLATFORM}.{device_id}"
 
@@ -86,6 +92,7 @@ async def update_built_in_counters(hass):
                     hass,
                     device_id,
                     {
+                        CONF_FRIENDLY_NAME: f"{TITLE} {area_title}{prefix_title}{entity_type_title}",
                         CONF_VALUE_TEMPLATE: Template(
                             f"{{{{ {template} | count > 0 }}}}"
                         ),
