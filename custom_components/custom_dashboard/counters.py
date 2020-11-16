@@ -1,4 +1,5 @@
 import logging
+import re
 
 # from homeassistant.components.group import Group
 from homeassistant.components.template.binary_sensor import CONF_ATTRIBUTE_TEMPLATES
@@ -124,10 +125,19 @@ async def update_built_in_counters(hass):
         if sensor is not None and not sensor.attributes.get("restored", False):
             return
 
-        entity_ids = [
-            f"{PLATFORM}.{DOMAIN}_{area_string}{prefix_string}{entity_type}"
-            for entity_type in entity_types
-        ]
+        entity_ids = []
+        if area is None:
+            regex = f"binary_sensor\\.{DOMAIN}_area_\\w+_{prefix_string}({'|'.join(entity_types)})"
+            entity_ids = [
+                entity_id
+                for entity_id in hass.states.async_entity_ids()
+                if re.search(regex, entity_id) is not None
+            ]
+        else:
+            entity_ids = [
+                f"{PLATFORM}.{DOMAIN}_{area_string}{prefix_string}{entity_type}"
+                for entity_type in entity_types
+            ]
 
         available_entities_template = f"""
             states |
