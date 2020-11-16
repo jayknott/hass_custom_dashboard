@@ -4,7 +4,11 @@ import os
 from custom_components.hacs.api.hacs_repository import hacs_repository
 from custom_components.hacs.api.hacs_repository_data import hacs_repository_data
 from custom_components.hacs.share import get_hacs
-from homeassistant.components.frontend import async_register_built_in_panel
+from homeassistant.components.frontend import (
+    async_register_built_in_panel,
+    async_remove_panel,
+    DATA_PANELS,
+)
 from homeassistant.components.lovelace import CONF_DASHBOARDS
 from homeassistant.components.lovelace.dashboard import LovelaceYAML
 from homeassistant.components.lovelace.const import (
@@ -24,7 +28,7 @@ from homeassistant.const import (
     CONF_URL,
 )
 
-from .binary_sensor import update_built_in_binary_sensors
+# from .binary_sensor import update_built_in_binary_sensors
 from .const import (
     CONF_MISSING_RESOURCES,
     DOMAIN,
@@ -142,6 +146,9 @@ async def update_dashboards(hass):
         "sidebar_title": config[CONF_TITLE],
         "sidebar_icon": config[CONF_ICON],
     }
+
+    if LOVELACE_DASHBOARD_URL_PATH in hass.data.get(DATA_PANELS, {}):
+        async_remove_panel(hass, LOVELACE_DASHBOARD_URL_PATH)
 
     async_register_built_in_panel(hass, LOVELACE_DOMAIN, **kwargs)
 

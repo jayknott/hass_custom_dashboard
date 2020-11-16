@@ -1,7 +1,12 @@
 {
+  "codeowners": [
+    "@jayknott"
+  ],
   "domain": "custom_dashboard",
   "name": "Custom Dashboard",
-  "documentation": "",
+  "config_flow": true,
+  "documentation": "https://github.com/jayknott/custom_dashboard",
+  "issue_tracker": "https://github.com/jayknott/custom_dashboard/issues",
   "dependencies": [
     "binary_sensor",
     "browser_mod",
@@ -11,7 +16,6 @@
     "input_text",
     "lovelace"
   ],
-  "codeowners": [],
   "requirements": [
     "jinja2"
   ]

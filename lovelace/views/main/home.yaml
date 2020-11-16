@@ -1,5 +1,3 @@
-# custom_dashboard
-
 {% set areas = areas | from_json %}
 {% set climate_main = _custom_dashboard_entities |
                       selectattr('visible') |
@@ -72,6 +70,7 @@ cards:
         - type: custom:custom-dashboard-flexbox-card
           margin_bottom: '0'
           cards:
+            {% if climate_main is not none %}
             - card:
                 !include
                   - ../components/entity_button.yaml
@@ -101,6 +100,7 @@ cards:
                           return '--%';
                         }
                         ]]]
+            {% endif %}
             {% endif %}
             {% if weather is not none %}
             - card:

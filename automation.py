@@ -23,6 +23,7 @@ from homeassistant.const import (
     CONF_TYPE,
     CONF_VARIABLES,
 )
+
 # from homeassistant.helpers.area_registry import EVENT_AREA_REGISTRY_UPDATED
 from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.script import (
@@ -68,7 +69,8 @@ from .const import (
     DOMAIN,
     EVENT_TRIGGER_AREA_AUTOMATIONS,
     EVENT_TRIGGER_ENTITY_AUTOMATIONS,
-    JINJA_VARIABLE_AREAS, JINJA_VARIABLE_ENTITIES,
+    JINJA_VARIABLE_AREAS,
+    JINJA_VARIABLE_ENTITIES,
     PLATFORM_AUTOMATION,
     PLATFORM_INPUT_BOOLEAN,
     PLATFORM_INPUT_NUMBER,
@@ -136,7 +138,9 @@ async def update_built_in_automations(hass, force=False):
                     CONF_ACTION: [
                         {
                             CONF_SERVICE: f"{PLATFORM_INPUT_SELECT}.set_options",
-                            CONF_SERVICE_ENTITY_ID: BUILT_IN_ENTITY_IDS[BUILT_IN_AREA_SELECT],
+                            CONF_SERVICE_ENTITY_ID: BUILT_IN_ENTITY_IDS[
+                                BUILT_IN_AREA_SELECT
+                            ],
                             CONF_SERVICE_DATA_TEMPLATE: {
                                 "options": Template(
                                     f"""
@@ -153,7 +157,9 @@ async def update_built_in_automations(hass, force=False):
                         },
                         {
                             CONF_SERVICE: f"{PLATFORM_INPUT_SELECT}.set_options",
-                            CONF_SERVICE_ENTITY_ID: BUILT_IN_ENTITY_IDS[BUILT_IN_ENTITY_AREA_SELECT],
+                            CONF_SERVICE_ENTITY_ID: BUILT_IN_ENTITY_IDS[
+                                BUILT_IN_ENTITY_AREA_SELECT
+                            ],
                             CONF_SERVICE_DATA_TEMPLATE: {
                                 "options": Template(
                                     f"""
@@ -193,7 +199,9 @@ async def update_built_in_automations(hass, force=False):
                     CONF_ACTION: [
                         {
                             CONF_SERVICE: f"{PLATFORM_INPUT_SELECT}.set_options",
-                            CONF_SERVICE_ENTITY_ID: BUILT_IN_ENTITY_IDS[BUILT_IN_ENTITY_ID_SELECT],
+                            CONF_SERVICE_ENTITY_ID: BUILT_IN_ENTITY_IDS[
+                                BUILT_IN_ENTITY_ID_SELECT
+                            ],
                             CONF_SERVICE_DATA_TEMPLATE: {
                                 "options": Template(
                                     f"""{{{{
@@ -344,7 +352,9 @@ async def update_built_in_automations(hass, force=False):
                     CONF_TRIGGER: [
                         {
                             CONF_PLATFORM: "state",
-                            CONF_ENTITY_ID: BUILT_IN_ENTITY_IDS[BUILT_IN_ENTITY_ID_SELECT],
+                            CONF_ENTITY_ID: BUILT_IN_ENTITY_IDS[
+                                BUILT_IN_ENTITY_ID_SELECT
+                            ],
                         }
                     ],
                     CONF_ACTION: [
@@ -356,15 +366,16 @@ async def update_built_in_automations(hass, force=False):
                             CONF_SERVICE_DATA_TEMPLATE: {
                                 "option": Template(
                                     f"""
-                                        {{% set area_id =   ({JINJA_VARIABLE_ENTITIES} |
-                                                                selectattr(
-                                                                    '{CONF_ENTITY_ID}',
-                                                                    'equalto',
-                                                                    states('{BUILT_IN_ENTITY_IDS[BUILT_IN_ENTITY_ID_SELECT]}')
-                                                                ) |
-                                                                list |
-                                                                first
-                                                            ).{ATTR_AREA_ID}
+                                        {{% set area_id =
+                                            ({JINJA_VARIABLE_ENTITIES} |
+                                                selectattr(
+                                                    '{CONF_ENTITY_ID}',
+                                                    'equalto',
+                                                    states('{BUILT_IN_ENTITY_IDS[BUILT_IN_ENTITY_ID_SELECT]}')
+                                                ) |
+                                                list |
+                                                first
+                                            ).{ATTR_AREA_ID}
                                         %}}
                                         {{% set area = {JINJA_VARIABLE_AREAS} | selectattr('{CONF_ID}', 'equalto', area_id) | list %}}
                                         {{% if (area | length) > 0 %}}
@@ -385,7 +396,17 @@ async def update_built_in_automations(hass, force=False):
                             CONF_SERVICE_DATA_TEMPLATE: {
                                 "option": Template(
                                     f"""
-                                        {{% set entity_type = (state_attr('{BUILT_IN_ENTITY_IDS[BUILT_IN_ENTITY_SELECTED]}', '{CONF_SELECTED_ENTITY}') | default({{}})).{CONF_TYPE} %}}
+                                        {{% set entity_type =
+                                            ({JINJA_VARIABLE_ENTITIES} |
+                                                selectattr(
+                                                    '{CONF_ENTITY_ID}',
+                                                    'equalto',
+                                                    states('{BUILT_IN_ENTITY_IDS[BUILT_IN_ENTITY_ID_SELECT]}')
+                                                ) |
+                                                list |
+                                                first
+                                            ).{CONF_TYPE}
+                                        %}}
                                         {{% if entity_type in state_attr('{BUILT_IN_ENTITY_IDS[BUILT_IN_ENTITY_TYPE_SELECT]}', '{CONF_OPTIONS}') %}}
                                             {{{{ entity_type }}}}
                                         {{% else %}}
@@ -404,7 +425,16 @@ async def update_built_in_automations(hass, force=False):
                             CONF_SERVICE_DATA_TEMPLATE: {
                                 "value": Template(
                                     f"""
-                                        {{% set entity = state_attr('{BUILT_IN_ENTITY_IDS[BUILT_IN_ENTITY_SELECTED]}', '{CONF_SELECTED_ENTITY}') %}}
+                                        {{% set entity =
+                                            ({JINJA_VARIABLE_ENTITIES} |
+                                                selectattr(
+                                                    '{CONF_ENTITY_ID}',
+                                                    'equalto',
+                                                    states('{BUILT_IN_ENTITY_IDS[BUILT_IN_ENTITY_ID_SELECT]}')
+                                                ) |
+                                                list |
+                                                first)
+                                        %}}
                                         {{% if entity is not none %}}
                                             {{{{ entity.{CONF_SORT_ORDER} }}}}
                                         {{% else %}}
@@ -418,7 +448,16 @@ async def update_built_in_automations(hass, force=False):
                         {
                             CONF_SERVICE_TEMPLATE: Template(
                                 f"""
-                                    {{% set entity = state_attr('{BUILT_IN_ENTITY_IDS[BUILT_IN_ENTITY_SELECTED]}', '{CONF_SELECTED_ENTITY}') %}}
+                                    {{% set entity =
+                                        ({JINJA_VARIABLE_ENTITIES} |
+                                            selectattr(
+                                                '{CONF_ENTITY_ID}',
+                                                'equalto',
+                                                states('{BUILT_IN_ENTITY_IDS[BUILT_IN_ENTITY_ID_SELECT]}')
+                                            ) |
+                                            list |
+                                            first)
+                                    %}}
                                     {{% if entity is not none and not entity.{CONF_VISIBLE} %}}
                                         {PLATFORM_INPUT_BOOLEAN}.turn_off
                                     {{% else %}}

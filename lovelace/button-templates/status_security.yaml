@@ -10,7 +10,8 @@ state:
     color: var(--paper-item-icon-color)
     styles:
       card:
-        - border-color: var(--card-background-color)
+        - border-width: 0
+        - border-color: transparent
 styles:
   card:
     - border-width: 2px

@@ -13,11 +13,15 @@ import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.storage import Store
 
 from .const import (
-    BUILT_IN_ENTITIES, BUILT_IN_ENTITY_IDS, CONF_AREA,
+    # BUILT_IN_ENTITIES,
+    BUILT_IN_ENTITY_IDS,
+    CONF_AREA,
     CONF_AREA_NAME,
     CONF_AREAS,
     CONF_ENTITIES,
-    CONF_ENTITY, CONF_ORIGINAL_AREA_ID, CONF_ORIGINAL_TYPE,
+    CONF_ENTITY,
+    CONF_ORIGINAL_AREA_ID,
+    CONF_ORIGINAL_TYPE,
     CONF_SORT_ORDER,
     CONF_VISIBLE,
     DEFAULT_ROOM_ICON,
@@ -81,13 +85,15 @@ async def _update_area(hass, call):
     if data is None:
         data = {}
     data[CONF_UPDATED] = False
-    
+
     area_name = call.data.get(CONF_AREA_NAME)
     area_id = await _get_area_id_by_name(hass, area_name)
 
     await _update_key_value(hass, data, call, area_id, ATTR_NAME, area_name)
     await _update_key_value(hass, data, call, area_id, CONF_ICON, DEFAULT_ROOM_ICON)
-    await _update_key_value(hass, data, call, area_id, CONF_SORT_ORDER, DEFAULT_SORT_ORDER)
+    await _update_key_value(
+        hass, data, call, area_id, CONF_SORT_ORDER, DEFAULT_SORT_ORDER
+    )
     await _update_key_value(hass, data, call, area_id, CONF_VISIBLE, True)
 
     return await _store_data(store, data, area_id)
@@ -99,13 +105,19 @@ async def _update_entity(hass, call):
     if data is None:
         data = {}
     data[CONF_UPDATED] = False
-    
+
     entity_id = call.data.get(CONF_ENTITY_ID)
     entity = _get_entity_by_id(hass, entity_id)
 
-    await _update_key_value(hass, data, call, entity_id, CONF_AREA_NAME, entity[CONF_ORIGINAL_AREA_ID])
-    await _update_key_value(hass, data, call, entity_id, CONF_SORT_ORDER, DEFAULT_SORT_ORDER)
-    await _update_key_value(hass, data, call, entity_id, CONF_TYPE, [entity[CONF_ORIGINAL_TYPE], None])
+    await _update_key_value(
+        hass, data, call, entity_id, CONF_AREA_NAME, entity[CONF_ORIGINAL_AREA_ID]
+    )
+    await _update_key_value(
+        hass, data, call, entity_id, CONF_SORT_ORDER, DEFAULT_SORT_ORDER
+    )
+    await _update_key_value(
+        hass, data, call, entity_id, CONF_TYPE, [entity[CONF_ORIGINAL_TYPE], None]
+    )
     await _update_key_value(hass, data, call, entity_id, CONF_VISIBLE, True)
 
     return await _store_data(store, data, entity_id)
@@ -113,9 +125,11 @@ async def _update_entity(hass, call):
 
 async def _get_area_id_by_name(hass, area_name):
     area = None
-    if area_name is not None and area_name != '':
+    if area_name is not None and area_name != "":
         areas = hass.data["area_registry"].async_list_areas()
-        area = next((area_obj for area_obj in areas if area_obj.name == area_name), None)
+        area = next(
+            (area_obj for area_obj in areas if area_obj.name == area_name), None
+        )
     else:
         return None
 
@@ -129,9 +143,15 @@ async def _get_area_id_by_name(hass, area_name):
 
 def _get_entity_by_id(hass, entity_id):
     entity = None
-    if entity_id is not None and entity_id != '':
-        entities = hass.states.get(BUILT_IN_ENTITY_IDS[BUILT_IN_ENTITIES]).attributes[CONF_ENTITIES]
-        entity = next((entity_obj for entity_obj in entities if entity_obj[CONF_ENTITY_ID] == entity_id), None)
+    if entity_id is not None and entity_id != "":
+        entity = next(
+            (
+                entity_obj
+                for entity_obj in hass.data[DOMAIN][CONF_ENTITIES]
+                if entity_obj[CONF_ENTITY_ID] == entity_id
+            ),
+            None,
+        )
     else:
         return None
 
@@ -139,7 +159,7 @@ def _get_entity_by_id(hass, entity_id):
         raise vol.error.SchemaError(
             f"Cannot update entity because an entity with id '{entity_id}' doesn't exist"
         )
-    
+
     return entity
 
 
@@ -148,13 +168,16 @@ async def _store_data(store, data, object_key):
         del data[CONF_UPDATED]
         if len(data[object_key].keys()) == 0:
             del data[object_key]
-    
+
         await store.async_save(data)
         return True
-    
+
     return False
 
-async def _update_key_value(hass, data, call, object_key, field_key, default_value=None, remove_if_default=True):
+
+async def _update_key_value(
+    hass, data, call, object_key, field_key, default_value=None, remove_if_default=True
+):
     if field_key not in call.data:
         return
 
@@ -162,8 +185,8 @@ async def _update_key_value(hass, data, call, object_key, field_key, default_val
         data[object_key] = {}
 
     new_value = call.data.get(field_key)
-    if new_value == '':
-      new_value = None
+    if new_value == "":
+        new_value = None
 
     if field_key == CONF_AREA_NAME:
         field_key = ATTR_AREA_ID

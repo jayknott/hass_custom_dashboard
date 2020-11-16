@@ -30,7 +30,7 @@ async def setup_yaml_parser(hass):
                 os.path.dirname(__file__),
                 TRANSLATIONS_PATH + DATA_DEFAULT_LANGUAGE + ".yaml",
             ),
-            skip_translations=True
+            skip_translations=True,
         )
 
         # Update with the selected language which allows for incomplete translations.
@@ -40,9 +40,9 @@ async def setup_yaml_parser(hass):
                     parse_yaml(
                         os.path.join(
                             os.path.dirname(__file__),
-                            TRANSLATIONS_PATH + language + ".yaml"
+                            TRANSLATIONS_PATH + language + ".yaml",
                         ),
-                        skip_translations=True
+                        skip_translations=True,
                     )
                 )
             except:
@@ -50,30 +50,34 @@ async def setup_yaml_parser(hass):
 
         return translations
 
-
     def load_yaml(fname, args={}, user_id=None, language=None, translations=None):
         return parse_yaml(fname, args, user_id, language, translations)
 
-
-    def parse_yaml(fname, args={}, user_id=None, language=None, translations=None, skip_translations=False):
+    def parse_yaml(
+        fname,
+        args={},
+        user_id=None,
+        language=None,
+        translations=None,
+        skip_translations=False,
+    ):
         try:
             jinja = hass.data.get(_ENVIRONMENT)
 
             if not skip_translations and translations is None:
                 translations = load_translations(language)
-
-            template = jinja.get_template(fname).render({
-                **args,
-                JINJA_VARIABLE_TRANSLATE: translations,
-                JINJA_VARIABLE_USER_ID: user_id,
-            })
+            template = jinja.get_template(fname).render(
+                {
+                    **args,
+                    JINJA_VARIABLE_TRANSLATE: translations,
+                    JINJA_VARIABLE_USER_ID: user_id,
+                }
+            )
 
             stream = io.StringIO(template)
             stream.name = fname
 
-            return (
-                load(stream, None, user_id, translations) or OrderedDict()
-            )
+            return load(stream, None, user_id, translations) or OrderedDict()
         except hass_loader.yaml.YAMLError as exc:
             _LOGGER.error(f"{str(exc)}: {template}")
             raise HomeAssistantError(exc) from exc
@@ -89,13 +93,14 @@ async def setup_yaml_parser(hass):
         fname = os.path.abspath(os.path.join(os.path.dirname(loader.name), value))
         return [fname, args]
 
-
     def _include_yaml(loader, node):
         node_values = process_node(loader, node)
 
         try:
             return hass_loader._add_reference(
-                load_yaml(*node_values, loader._user_id, None, loader._translations), loader, node
+                load_yaml(*node_values, loader._user_id, None, loader._translations),
+                loader,
+                node,
             )
         except FileNotFoundError as exc:
             _LOGGER.error("Unable to include file %s: %s", node_values[0], exc)
@@ -145,8 +150,8 @@ async def setup_yaml_parser(hass):
         return f"{path}?{timestamp}"
 
     def load(stream, Loader, user_id=None, translations=None):
-        if Loader is None:
-            hass_loader.yaml.load_warning('load')
+        # if Loader is None:
+        #     hass_loader.yaml.load_warning("load")
         Loader = CustomLoader
 
         loader = None
@@ -161,7 +166,6 @@ async def setup_yaml_parser(hass):
             loader.dispose()
 
     class CustomLoader(hass_loader.SafeLineLoader):
-
         def __init__(self, stream, user_id=None, translations=None):
             super().__init__(stream)
             self._user_id = user_id
@@ -174,7 +178,5 @@ async def setup_yaml_parser(hass):
     CustomLoader.add_constructor(
         "!include_dir_merge_list", _include_dir_merge_list_yaml
     )
-    CustomLoader.add_constructor(
-        "!include_dir_named", _include_dir_named_yaml
-    )
+    CustomLoader.add_constructor("!include_dir_named", _include_dir_named_yaml)
     CustomLoader.add_constructor("!file", _uncache_file)

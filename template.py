@@ -12,6 +12,8 @@ from homeassistant.helpers.template import (
 from .registry import hass_areas, hass_entities
 from .const import (
     BUILT_IN_ENTITY_IDS,
+    CONF_AREAS,
+    CONF_ENTITIES,
     CONF_MISSING_RESOURCES,
     DOMAIN,
     JINJA_VARIABLE_ADDITIONAL,
@@ -33,7 +35,7 @@ async def setup_template(hass):
     jinja = hass.data.get(_ENVIRONMENT)
     if jinja is None:
         jinja = hass.data[_ENVIRONMENT] = TemplateEnvironment(hass)
-    
+
     jinja.loader = jinja2.FileSystemLoader("/")
 
     if jinja.tests.get("regex_match") is None:
@@ -44,7 +46,7 @@ async def setup_template(hass):
     jinja.globals[JINJA_VARIABLE_ADDITIONAL] = JINJA_VARIABLES
     jinja.globals[JINJA_VARIABLE_CONFIGURATION] = {
         LOVELACE: os.path.join(os.path.dirname(__file__), LOVELACE_DIR),
-        CONF_MISSING_RESOURCES: hass.data[DOMAIN][CONF_MISSING_RESOURCES]
+        CONF_MISSING_RESOURCES: hass.data[DOMAIN][CONF_MISSING_RESOURCES],
     }
     jinja.globals[JINJA_VARIABLE_BUILT_IN_ENTITIES] = BUILT_IN_ENTITY_IDS
     jinja.globals[JINJA_VARIABLE_SERVICES] = SERVICE_IDS
@@ -55,9 +57,9 @@ async def setup_template(hass):
 
 async def update_template_areas_global(hass):
     jinja = hass.data.get(_ENVIRONMENT)
-    jinja.globals[JINJA_VARIABLE_AREAS] = await hass_areas(hass)
+    jinja.globals[JINJA_VARIABLE_AREAS] = hass.data[DOMAIN][CONF_AREAS]
 
 
 async def update_template_entities_global(hass):
     jinja = hass.data.get(_ENVIRONMENT)
-    jinja.globals[JINJA_VARIABLE_ENTITIES] = await hass_entities(hass)
+    jinja.globals[JINJA_VARIABLE_ENTITIES] = hass.data[DOMAIN][CONF_ENTITIES]

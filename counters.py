@@ -56,9 +56,9 @@ async def update_built_in_counters(hass):
         select_area = ""
         if area is not None:
             select_area = f", 'equalto', '{area[ATTR_ID]}'"
-        
+
         state_filter = "selectattr" if not reject else "rejectattr"
-        
+
         available_entities_template = f"""
             {JINJA_VARIABLE_ENTITIES} |
             selectattr('{CONF_TYPE}', 'equalto', '{prefix_string}{entity_type}') |
@@ -78,22 +78,26 @@ async def update_built_in_counters(hass):
             list
         """
 
-        
-
-        await platform.async_add_entities([
-            await create_binary_sensor_entity(
-                hass,
-                device_id,
-                {
-                    CONF_VALUE_TEMPLATE: Template(f"{{{{ {template} | count > 0 }}}}"),
-                    CONF_ATTRIBUTE_TEMPLATES: {
-                        CONF_COUNT: Template(f"{{{{ {template} | count }}}}"),
-                        CONF_ENTITIES: Template(f"{{{{ {template} }}}}"),
-                        CONF_TRACKED_ENTITY_COUNT: Template(f"{{{{ {available_entities_template} | count }}}}")
-                    }
-                }
-            )
-        ])
+        await platform.async_add_entities(
+            [
+                await create_binary_sensor_entity(
+                    hass,
+                    device_id,
+                    {
+                        CONF_VALUE_TEMPLATE: Template(
+                            f"{{{{ {template} | count > 0 }}}}"
+                        ),
+                        CONF_ATTRIBUTE_TEMPLATES: {
+                            CONF_COUNT: Template(f"{{{{ {template} | count }}}}"),
+                            CONF_ENTITIES: Template(f"{{{{ {template} }}}}"),
+                            CONF_TRACKED_ENTITY_COUNT: Template(
+                                f"{{{{ {available_entities_template} | count }}}}"
+                            ),
+                        },
+                    },
+                )
+            ]
+        )
 
     async def create_super_counter(entity_types, name, prefix=None, area=None):
         platform = hass.data[CONF_ENTITY_PLATFORM][PLATFORM][0]
@@ -123,53 +127,70 @@ async def update_built_in_counters(hass):
             list
         """
 
-        await platform.async_add_entities([
-            await create_binary_sensor_entity(
-                hass,
-                device_id,
-                {
-                    CONF_VALUE_TEMPLATE: Template(f"{{{{ {template} | count > 0 }}}}"),
-                    CONF_ATTRIBUTE_TEMPLATES: {
-                        CONF_COUNT: Template(f"{{{{ {template} | sum(attribute='attributes.{CONF_COUNT}') }}}}"),
-                        CONF_ENTITIES: Template(
-                            f"""
+        await platform.async_add_entities(
+            [
+                await create_binary_sensor_entity(
+                    hass,
+                    device_id,
+                    {
+                        CONF_VALUE_TEMPLATE: Template(
+                            f"{{{{ {template} | count > 0 }}}}"
+                        ),
+                        CONF_ATTRIBUTE_TEMPLATES: {
+                            CONF_COUNT: Template(
+                                f"{{{{ {template} | sum(attribute='attributes.{CONF_COUNT}') }}}}"
+                            ),
+                            CONF_ENTITIES: Template(
+                                f"""
                                 {{% set ns = namespace(entities=[]) %}}
                                 {{% for entities in {template} | map(attribute='attributes.{CONF_ENTITIES}') | list %}}
                                     {{% set ns.entities = ns.entities + entities %}}
                                 {{% endfor %}}
                                 {{{{ ns.entities }}}}
                             """
-                        ),
-                        CONF_TRACKED_ENTITY_COUNT: Template(
-                            f"{{{{ {available_entities_template} | sum(attribute='attributes.{CONF_TRACKED_ENTITY_COUNT}') }}}}"
-                        ),
-                    }
-                }
-            )
-        ])
+                            ),
+                            CONF_TRACKED_ENTITY_COUNT: Template(
+                                f"{{{{ {available_entities_template} | sum(attribute='attributes.{CONF_TRACKED_ENTITY_COUNT}') }}}}"
+                            ),
+                        },
+                    },
+                )
+            ]
+        )
 
     create_task = hass.async_create_task
 
     for entity_type in TRACKED_ENTITY_TYPES + SOMETHING_ON_ENTITY_TYPES:
         states = [STATE_ON] + TRACKED_ENTITY_TYPE_ON_STATES.get(entity_type, [])
-        create_task(create_counter(entity_type, states))
+        # create_task(create_counter(entity_type, states))
         for area in areas:
             create_task(create_counter(entity_type, states, None, area))
 
     for entity_type in SECURITY_ENTITY_TYPES:
         states = [STATE_OFF] + SECURITY_ENTITY_TYPE_OFF_STATES.get(entity_type, [])
-        create_task(create_counter(entity_type, states, CONF_SECURITY, None, True))
+        # create_task(create_counter(entity_type, states, CONF_SECURITY, None, True))
         for area in areas:
             create_task(create_counter(entity_type, states, CONF_SECURITY, area, True))
 
     for entity_type in TRACKED_ENTITY_TYPES:
         create_task(create_super_counter([entity_type], entity_type))
+
     create_task(create_super_counter(SOMETHING_ON_ENTITY_TYPES, CONF_SOMETHING_ON))
-    create_task(create_super_counter(SECURITY_ENTITY_TYPES, CONF_SECURITY, CONF_SECURITY))
+    create_task(
+        create_super_counter(SECURITY_ENTITY_TYPES, CONF_SECURITY, CONF_SECURITY)
+    )
 
     for area in areas:
-        for entity_type in TRACKED_ENTITY_TYPES:
-            create_task(create_super_counter([entity_type], entity_type, None, area))
-        create_task(create_super_counter(SECURITY_ENTITY_TYPES, CONF_SECURITY, CONF_SECURITY, area))
-        create_task(create_super_counter(SOMETHING_ON_ENTITY_TYPES, CONF_SOMETHING_ON, None, area))
+        # for entity_type in TRACKED_ENTITY_TYPES:
+            # create_task(create_super_counter([entity_type], entity_type, None, area))
 
+        create_task(
+            create_super_counter(
+                SECURITY_ENTITY_TYPES, CONF_SECURITY, CONF_SECURITY, area
+            )
+        )
+        create_task(
+            create_super_counter(
+                SOMETHING_ON_ENTITY_TYPES, CONF_SOMETHING_ON, None, area
+            )
+        )

@@ -1,3 +1,4 @@
+from homeassistant.core import HomeAssistant
 import logging
 import re
 
@@ -36,8 +37,22 @@ _LOGGER = logging.getLogger(__name__)
 PLATFORM = PLATFORM_BINARY_SENSOR
 
 
-async def remove_all_entities(hass):
-    
+async def setup_registries(hass: HomeAssistant):
+    hass.data[DOMAIN][CONF_AREAS] = []
+    hass.data[DOMAIN][CONF_ENTITIES] = []
+
+
+async def update_registries(hass: HomeAssistant):
+    await update_area_registry(hass)
+    await update_entity_registry(hass)
+
+
+async def update_area_registry(hass: HomeAssistant):
+    hass.data[DOMAIN][CONF_AREAS] = await hass_areas(hass)
+
+
+async def update_entity_registry(hass: HomeAssistant):
+    hass.data[DOMAIN][CONF_ENTITIES] = await hass_entities(hass)
 
 
 async def hass_areas(hass):
@@ -68,6 +83,7 @@ async def hass_areas(hass):
 
     return areas
 
+
 def original_entity_type(hass, entity_id):
     entity = hass.states.get(entity_id)
     domain = entity.domain if entity is not None else entity_id.split(".")[0]
@@ -75,19 +91,19 @@ def original_entity_type(hass, entity_id):
     def binary_sensors():
         return BINARY_SENSOR_CLASS_MAP.get(
             entity.attributes.get("device_class"),
-            BINARY_SENSOR_CLASS_MAP.get(CONF_DEFAULT, domain)
+            BINARY_SENSOR_CLASS_MAP.get(CONF_DEFAULT, domain),
         )
 
     def covers():
         return COVER_CLASS_MAP.get(
             entity.attributes.get("device_class"),
-            COVER_CLASS_MAP.get(CONF_DEFAULT, domain)
+            COVER_CLASS_MAP.get(CONF_DEFAULT, domain),
         )
 
     def sensors():
         return SENSOR_CLASS_MAP.get(
             entity.attributes.get("device_class"),
-            SENSOR_CLASS_MAP.get(CONF_DEFAULT, domain)
+            SENSOR_CLASS_MAP.get(CONF_DEFAULT, domain),
         )
 
     def other():
@@ -104,6 +120,7 @@ def original_entity_type(hass, entity_id):
 
     return switcher.get(domain, other)()
 
+
 def match_area_with_entity_id(entity_id, areas):
     if entity_id is None or areas is None:
         return None
@@ -114,13 +131,13 @@ def match_area_with_entity_id(entity_id, areas):
         regex = f"(all_)?({name.replace(quote, '')}|{name.replace(quote, '_')})_"
         if re.match(regex, entity_id.split(".")[-1]):
             return area.id
-    
+
     return None
 
 
 async def hass_entities(hass):
-    entities = [] # make as an array so it can be sorted
-    entities_processed = [] # keep track of ids so they don't get processed twice
+    entities = []  # make as an array so it can be sorted
+    entities_processed = []  # keep track of ids so they don't get processed twice
 
     store = Store(hass, 1, f"{DOMAIN}.{CONF_ENTITIES}")
     data = await store.async_load()
@@ -141,7 +158,11 @@ async def hass_entities(hass):
                 entity_name = entity_state.name if entity_state is not None else None
                 entity_type = original_entity_type(hass, entity.entity_id)
                 if entity_name is None:
-                    entity_name = entity.name if entity.name is not None else entity.entity_id.split(".")[-1]
+                    entity_name = (
+                        entity.name
+                        if entity.name is not None
+                        else entity.entity_id.split(".")[-1]
+                    )
                 entities.append(
                     {
                         CONF_ENTITY_ID: entity.entity_id,
@@ -150,7 +171,9 @@ async def hass_entities(hass):
                         ATTR_NAME: entity_name,
                         CONF_TYPE: entity_data.get(CONF_TYPE, entity_type),
                         CONF_ORIGINAL_TYPE: entity_type,
-                        CONF_SORT_ORDER: entity_data.get(CONF_SORT_ORDER, DEFAULT_SORT_ORDER),
+                        CONF_SORT_ORDER: entity_data.get(
+                            CONF_SORT_ORDER, DEFAULT_SORT_ORDER
+                        ),
                         CONF_VISIBLE: entity_data.get(CONF_VISIBLE, True),
                     }
                 )
@@ -163,7 +186,9 @@ async def hass_entities(hass):
         entity_data = data.get(entity_id, {})
         hass_state = hass.states.get(entity_id)
         entity_type = original_entity_type(hass, entity_id)
-        area_id = entity_data.get(ATTR_AREA_ID, match_area_with_entity_id(entity_id, areas))
+        area_id = entity_data.get(
+            ATTR_AREA_ID, match_area_with_entity_id(entity_id, areas)
+        )
 
         entities.append(
             {

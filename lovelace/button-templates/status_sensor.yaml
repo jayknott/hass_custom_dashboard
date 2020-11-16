@@ -17,9 +17,9 @@ styles:
     - width: 87px
     - height: 87px
     - overflow: visible
-    - border-width: 1px
+    - border-width: 0
     - border-style: solid
-    - border-color: var(--card-background-color)
+    - border-color: transparent
   custom_fields:
     counter:
       - position: absolute
