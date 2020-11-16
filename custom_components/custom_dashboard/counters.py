@@ -8,6 +8,7 @@ from homeassistant.components.template.binary_sensor import CONF_ATTRIBUTE_TEMPL
 from homeassistant.const import (
     ATTR_ID,
     ATTR_AREA_ID,
+    ATTR_NAME,
     CONF_ENTITY_ID,
     CONF_FRIENDLY_NAME,
     CONF_ICON_TEMPLATE,
@@ -88,7 +89,7 @@ async def update_built_in_counters(hass: HomeAssistant):
         ]
 
         if len(entity_ids) == 0:
-            _LOGGER.error(f"No entities for {entity_type} {states}")
+            # _LOGGER.error(f"No entities for {entity_type} {states}")
             return
 
         state_template = []
@@ -175,6 +176,7 @@ async def update_built_in_counters(hass: HomeAssistant):
             ]
 
         if len(entity_ids) == 0:
+            _LOGGER.warn(f"no entities for super {area[ATTR_NAME]} {name}")
             return
 
         state_entities = [
