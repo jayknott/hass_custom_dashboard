@@ -29,13 +29,13 @@ custom_fields:
           icon="hass:lightbulb"
           style="width: 20px; height: 20px; color: var(
             ${
-              light_state.attributes.tracked_entity_count == 0
+              !light_state || light_state.attributes.tracked_entity_count == 0
                 ? '--state-icon-unavailable-color'
                 : (light_state.state == 'on'
                     ? '--paper-item-icon-active-color'
                     : '--paper-item-icon-color'
             )}
-          ); opacity: ${light_state.attributes.tracked_entity_count == 0 ? 0.2 : 0.8}"
+          ); opacity: ${!light_state || light_state.attributes.tracked_entity_count == 0 ? 0.2 : 0.8}"
         />`;
     ]]]
   media: >
@@ -46,13 +46,13 @@ custom_fields:
           icon="mdi:play-circle"
           style="width: 20px; height: 20px; color: var(
             ${
-              media_state.attributes.tracked_entity_count == 0
+              !media_state || media_state.attributes.tracked_entity_count == 0
                 ? '--state-icon-unavailable-color'
                 : (media_state.state == 'on'
                     ? '--paper-item-icon-active-color'
                     : '--paper-item-icon-color'
             )}
-          ); opacity: ${media_state.attributes.tracked_entity_count == 0 ? 0.2 : 0.8}"
+          ); opacity: ${!media_state || media_state.attributes.tracked_entity_count == 0 ? 0.2 : 0.8}"
         />`;
     ]]]
   motion: >
@@ -63,13 +63,13 @@ custom_fields:
           icon="mdi:run"
           style="width: 20px; height: 20px; color: var(
             ${
-              motion_state.attributes.tracked_entity_count == 0
+              !motion_state || motion_state.attributes.tracked_entity_count == 0
                 ? '--state-icon-unavailable-color'
                 : (motion_state.state == 'on'
                     ? '--paper-item-icon-active-color'
                     : '--paper-item-icon-color'
             )}
-          ); opacity: ${motion_state.attributes.tracked_entity_count == 0 ? 0.2 : 0.8}"
+          ); opacity: ${!motion_state || motion_state.attributes.tracked_entity_count == 0 ? 0.2 : 0.8}"
         />`;
     ]]]
   unsecured: >
@@ -80,13 +80,13 @@ custom_fields:
           icon=${security_state.state == 'on' ? 'mdi:shield-alert' : 'mdi:shield-check'}
           style="width: 20px; height: 20px; color: var(
             ${
-              security_state.attributes.tracked_entity_count == 0
+              !security_state || security_state.attributes.tracked_entity_count == 0
                 ? '--state-icon-unavailable-color'
                 : (security_state.state == 'on'
                     ? '--error-state-color'
                     : '--paper-item-icon-color'
             )}
-          ); opacity: ${security_state.attributes.tracked_entity_count == 0 ? 0.2 : 0.8}"
+          ); opacity: ${!security_state || security_state.attributes.tracked_entity_count == 0 ? 0.2 : 0.8}"
         />`;
     ]]]
 styles:
