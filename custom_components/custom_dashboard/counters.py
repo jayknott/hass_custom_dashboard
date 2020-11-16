@@ -106,7 +106,6 @@ async def update_built_in_counters(hass):
         area_string = f"area_{area[ATTR_ID]}_" if area is not None else ""
         area_title = f"Area {area[ATTR_ID][-5:-1]} " if area is not None else ""
         prefix_string = f"{prefix}_" if prefix is not None else ""
-        prefix_title = prefix.replace("_", " ").title()
         name_title = name.replace("_", " ").title()
 
         device_id = f"{DOMAIN}_{area_string}{name}"
@@ -139,7 +138,7 @@ async def update_built_in_counters(hass):
                     hass,
                     device_id,
                     {
-                        CONF_FRIENDLY_NAME: f"{TITLE} {area_title}{prefix_title}{name_title}",
+                        CONF_FRIENDLY_NAME: f"{TITLE} {area_title}{name_title}",
                         CONF_VALUE_TEMPLATE: Template(
                             f"{{{{ {template} | count > 0 }}}}"
                         ),
