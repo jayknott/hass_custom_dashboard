@@ -88,6 +88,7 @@ async def update_built_in_counters(hass: HomeAssistant):
         ]
 
         if len(entity_ids) == 0:
+            _LOGGER.error(f"No entities for {entity_type} {states}")
             return
 
         state_template = []
