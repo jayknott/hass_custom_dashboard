@@ -72,6 +72,23 @@ async def update_built_in_counters(hass: HomeAssistant):
 
         state_filter = "selectattr" if not reject else "rejectattr"
 
+        # Enter the entities seperately so the template listener will update faster
+        entity_ids = [
+            entity[CONF_ENTITY_ID]
+            for entity in hass.data[DOMAIN][CONF_ENTITIES]
+            if (
+                entity[CONF_TYPE] == f"{prefix_string}{entity_type}"
+                and entity[CONF_VISIBLE]
+                and (
+                    (entity[ATTR_AREA_ID] == area[ATTR_ID])
+                    if area is not None
+                    else (entity[ATTR_AREA_ID] is not None)
+                )
+            )
+        ]
+
+        _LOGGER.warn(entity_ids)
+
         available_entities_template = f"""
             {JINJA_VARIABLE_ENTITIES} |
             selectattr('{CONF_TYPE}', 'equalto', '{prefix_string}{entity_type}') |
