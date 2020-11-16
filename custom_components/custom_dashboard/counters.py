@@ -87,26 +87,31 @@ async def update_built_in_counters(hass: HomeAssistant):
             )
         ]
 
-        _LOGGER.warn(entity_ids)
+        state_entities = [
+            f"states('{entity_id}') in {states}" for entity_id in entity_ids
+        ]
 
-        available_entities_template = f"""
-            {JINJA_VARIABLE_ENTITIES} |
-            selectattr('{CONF_TYPE}', 'equalto', '{prefix_string}{entity_type}') |
-            selectattr('{CONF_VISIBLE}') |
-            selectattr('{ATTR_AREA_ID}'{select_area}) |
-            map(attribute='{CONF_ENTITY_ID}') |
-            list
-        """
+        if len(state_entities) == 0:
+            return
 
-        template = f"""
-            states |
-            selectattr('{CONF_ENTITY_ID}', 'in',
-                {available_entities_template}
-            ) |
-            {state_filter}('{CONF_STATE}', 'in', {states}) |
-            map(attribute='{CONF_ENTITY_ID}') |
-            list
-        """
+        # available_entities_template = f"""
+        #     {JINJA_VARIABLE_ENTITIES} |
+        #     selectattr('{CONF_TYPE}', 'equalto', '{prefix_string}{entity_type}') |
+        #     selectattr('{CONF_VISIBLE}') |
+        #     selectattr('{ATTR_AREA_ID}'{select_area}) |
+        #     map(attribute='{CONF_ENTITY_ID}') |
+        #     list
+        # """
+
+        # template = f"""
+        #     states |
+        #     selectattr('{CONF_ENTITY_ID}', 'in',
+        #         {available_entities_template}
+        #     ) |
+        #     {state_filter}('{CONF_STATE}', 'in', {states}) |
+        #     map(attribute='{CONF_ENTITY_ID}') |
+        #     list
+        # """
 
         await platform.async_add_entities(
             [
@@ -117,14 +122,17 @@ async def update_built_in_counters(hass: HomeAssistant):
                         CONF_FRIENDLY_NAME: f"{TITLE} {area_title}{prefix_title}{entity_type_title}",
                         CONF_ICON_TEMPLATE: Template("mdi:counter"),
                         CONF_VALUE_TEMPLATE: Template(
-                            f"{{{{ {template} | count > 0 }}}}"
+                            f"{{{{ {' or '.join(state_entities)} }}}}"
                         ),
                         CONF_ATTRIBUTE_TEMPLATES: {
-                            CONF_COUNT: Template(f"{{{{ {template} | count }}}}"),
-                            CONF_ENTITIES: Template(f"{{{{ {template} }}}}"),
-                            CONF_TRACKED_ENTITY_COUNT: Template(
-                                f"{{{{ {available_entities_template} | count }}}}"
-                            ),
+                            # CONF_COUNT: Template(f"{{{{ {template} | count }}}}"),
+                            CONF_COUNT: Template(f"{{{{ 0 }}}}"),
+                            # CONF_ENTITIES: Template(f"{{{{ {template} }}}}"),
+                            CONF_ENTITIES: Template(f"{{{{ [] }}}}"),
+                            # CONF_TRACKED_ENTITY_COUNT: Template(
+                            #     f"{{{{ {available_entities_template} | count }}}}"
+                            # ),
+                            CONF_TRACKED_ENTITY_COUNT: Template(f"{{{{ 0 }}}}"),
                         },
                     },
                 )
