@@ -111,6 +111,7 @@ hold_action:
           child_card: true
           consolidate_entities: true
           hide_header: true
+    {% if state_attr(entity, "supported_features") is not none %}
     {% if "{:b}".format(state_attr(entity, "supported_features") | default("0"))[-5] == "1" %}
       actions:
       {%
@@ -171,6 +172,7 @@ hold_action:
           color: "{{ display_color }}"
           name: "{{ color_name }}"
       {% endfor %}
+    {% endif %}
     {% endif %}
     deviceID:
       - this
