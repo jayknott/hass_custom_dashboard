@@ -176,8 +176,14 @@ async def update_built_in_counters(hass: HomeAssistant):
             ]
 
         if len(entity_ids) == 0:
-            _LOGGER.warn(f"no entities for super {area[ATTR_NAME]} {name}")
+            _LOGGER.error(area)
+            _LOGGER.warn(
+                f"no entities for super {area[ATTR_NAME] if area is not None else ''} {name}"
+            )
             return
+        else:
+            _LOGGER.error(area)
+            _LOGGER.warn(entity_ids)
 
         state_entities = [
             f"is_state('{entity_id}', '{STATE_ON}')" for entity_id in entity_ids
@@ -243,12 +249,6 @@ async def update_built_in_counters(hass: HomeAssistant):
         for area in areas:
             await create_counter(entity_type, states, CONF_SECURITY, area, True)
 
-    for entity_type in TRACKED_ENTITY_TYPES:
-        await create_super_counter([entity_type], entity_type)
-
-    await create_super_counter(SOMETHING_ON_ENTITY_TYPES, CONF_SOMETHING_ON)
-    await create_super_counter(SECURITY_ENTITY_TYPES, CONF_SECURITY, CONF_SECURITY)
-
     for area in areas:
         # for entity_type in TRACKED_ENTITY_TYPES:
         # create_task(create_super_counter([entity_type], entity_type, None, area))
@@ -259,3 +259,9 @@ async def update_built_in_counters(hass: HomeAssistant):
         await create_super_counter(
             SOMETHING_ON_ENTITY_TYPES, CONF_SOMETHING_ON, None, area
         )
+
+    for entity_type in TRACKED_ENTITY_TYPES:
+        await create_super_counter([entity_type], entity_type)
+
+    await create_super_counter(SOMETHING_ON_ENTITY_TYPES, CONF_SOMETHING_ON)
+    await create_super_counter(SECURITY_ENTITY_TYPES, CONF_SECURITY, CONF_SECURITY)
