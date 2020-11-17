@@ -1,7 +1,9 @@
-import logging
+"""Extend the template options for HA."""
 import jinja2
 import os
+from typing import Optional
 
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers.template import (
     _ENVIRONMENT,
     regex_match,
@@ -9,7 +11,6 @@ from homeassistant.helpers.template import (
     TemplateEnvironment,
 )
 
-from .registry import hass_areas, hass_entities
 from .const import (
     BUILT_IN_ENTITY_IDS,
     CONF_AREAS,
@@ -28,11 +29,11 @@ from .const import (
     SERVICE_IDS,
 )
 
-_LOGGER = logging.getLogger(__name__)
 
+async def setup_template(hass: HomeAssistant) -> None:
+    """Setup the template options."""
 
-async def setup_template(hass):
-    jinja = hass.data.get(_ENVIRONMENT)
+    jinja: Optional[TemplateEnvironment] = hass.data.get(_ENVIRONMENT)
     if jinja is None:
         jinja = hass.data[_ENVIRONMENT] = TemplateEnvironment(hass)
 
@@ -55,11 +56,15 @@ async def setup_template(hass):
     await update_template_entities_global(hass)
 
 
-async def update_template_areas_global(hass):
-    jinja = hass.data.get(_ENVIRONMENT)
+async def update_template_areas_global(hass: HomeAssistant) -> None:
+    """Update the area global with new data from the intergrations HA data."""
+
+    jinja: TemplateEnvironment = hass.data.get(_ENVIRONMENT)
     jinja.globals[JINJA_VARIABLE_AREAS] = hass.data[DOMAIN][CONF_AREAS]
 
 
-async def update_template_entities_global(hass):
-    jinja = hass.data.get(_ENVIRONMENT)
+async def update_template_entities_global(hass: HomeAssistant) -> None:
+    """Update the entities global with new data from the intergrations HA data."""
+
+    jinja: TemplateEnvironment = hass.data.get(_ENVIRONMENT)
     jinja.globals[JINJA_VARIABLE_ENTITIES] = hass.data[DOMAIN][CONF_ENTITIES]

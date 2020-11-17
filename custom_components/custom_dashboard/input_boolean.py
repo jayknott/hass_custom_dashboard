@@ -1,5 +1,8 @@
-import logging
+"""Input booleans used for settings."""
 
+from homeassistant.helpers.entity_platform import EntityPlatform
+from typing import Dict, List, Type
+from homeassistant.core import HomeAssistant
 from homeassistant.components.input_boolean import (
     CONF_INITIAL,
     InputBoolean,
@@ -22,31 +25,34 @@ from .const import (
     TITLE,
 )
 
-_LOGGER = logging.getLogger(__name__)
-
 PLATFORM = PLATFORM_INPUT_BOOLEAN
 
 
-def create_input_boolean_entity(device_id, conf={}):
-    entity_id = f"{PLATFORM}.{device_id}"
-    config = {
-        CONF_ID: entity_id.split(".")[-1],
-        CONF_NAME: entity_id.split(".")[-1],
-        CONF_ICON: "mdi:checkbox-marked-outline",
-        CONF_INITIAL: STATE_OFF,
-    }
-    config.update(conf)
+class CustomInputBoolean(InputBoolean):
+    """Input boolean that removes stored states."""
 
-    entity = CustomInputBoolean(config, True)
+    async def async_internal_added_to_hass(self):
+        await Entity.async_internal_added_to_hass(self)
 
-    return entity
+    async def async_internal_will_remove_from_hass(self):
+        await Entity.async_internal_will_remove_from_hass(self)
+
+    async def async_get_last_state(self):
+        pass
 
 
-async def update_built_in_input_boolean(hass):
-    data = hass.data[DOMAIN]
-    built_in = data[CONF_BUILT_IN_ENTITIES]
-    platform = hass.data[CONF_ENTITY_PLATFORM][PLATFORM][0]
-    to_add = []
+async def setup_input_booleans(hass: HomeAssistant) -> None:
+    """Setup input booleans."""
+
+    await update_input_booleans(hass)
+
+
+async def update_input_booleans(hass: HomeAssistant) -> None:
+    """Update built in input booleans."""
+
+    built_in: Dict(str, Type[Entity]) = hass.data[DOMAIN][CONF_BUILT_IN_ENTITIES]
+    platform: EntityPlatform = hass.data[CONF_ENTITY_PLATFORM][PLATFORM][0]
+    to_add: List[CustomInputBoolean] = []
 
     # Area icon setting
     if built_in.get(BUILT_IN_AREA_VISIBLE) is None:
@@ -67,12 +73,16 @@ async def update_built_in_input_boolean(hass):
     await platform.async_add_entities(to_add)
 
 
-class CustomInputBoolean(InputBoolean):
-    async def async_internal_added_to_hass(self):
-        await Entity.async_internal_added_to_hass(self)
+def create_input_boolean_entity(device_id: str, conf={}) -> CustomInputBoolean:
+    entity_id = f"{PLATFORM}.{device_id}"
+    config = {
+        CONF_ID: entity_id.split(".")[-1],
+        CONF_NAME: entity_id.split(".")[-1],
+        CONF_ICON: "mdi:checkbox-marked-outline",
+        CONF_INITIAL: STATE_OFF,
+    }
+    config.update(conf)
 
-    async def async_internal_will_remove_from_hass(self):
-        await Entity.async_internal_will_remove_from_hass(self)
+    entity = CustomInputBoolean(config, True)
 
-    async def async_get_last_state(self):
-        pass
+    return entity

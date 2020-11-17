@@ -1,19 +1,29 @@
+"""Extend the functionality of the HA YAML parser."""
+from io import StringIO
+
+from homeassistant.core import HomeAssistant
+from collections import OrderedDict
 import io
 
 import logging
 import os
 import time
-from typing import List
+from typing import (
+    Any,
+    Dict,
+    List,
+    Optional,
+    OrderedDict as OrderedDictType,
+    Union,
+)
 
-from collections import OrderedDict
 from homeassistant.exceptions import HomeAssistantError
-from homeassistant.helpers.template import _ENVIRONMENT
+from homeassistant.helpers.template import TemplateEnvironment, _ENVIRONMENT
 from homeassistant.util.yaml import loader as hass_loader
 from homeassistant.components.lovelace import dashboard
 
 from .const import (
     DATA_DEFAULT_LANGUAGE,
-    DOMAIN,
     TRANSLATIONS_PATH,
     JINJA_VARIABLE_TRANSLATE,
     JINJA_VARIABLE_USER_ID,
@@ -21,11 +31,35 @@ from .const import (
 
 _LOGGER = logging.getLogger(__name__)
 
+TranslationDict = Dict[str, Union[str, Dict[str, str]]]
 
-async def setup_yaml_parser(hass):
-    def load_translations(language=None):
+LoadedYAML = Optional[Union[Any, OrderedDictType, List[Union[Any, List, Dict]], Dict]]
+
+
+class CustomLoader(hass_loader.SafeLineLoader):
+    """A YAML loader that holds user and translations."""
+
+    def __init__(
+        self,
+        stream: StringIO,
+        user_id: Optional[str] = None,
+        translations: Optional[TranslationDict] = None,
+    ):
+        super().__init__(stream)
+        self._user_id = user_id
+        self._translations = translations
+
+
+async def setup_yaml_parser(hass: HomeAssistant) -> None:
+    """Setup the YAML parser."""
+
+    def load_translations(
+        language: Optional[str] = None,
+    ) -> TranslationDict:
+        """Load translation YAML files."""
+
         # Always load the default language
-        translations = parse_yaml(
+        translations: TranslationDict = parse_yaml(
             os.path.join(
                 os.path.dirname(__file__),
                 TRANSLATIONS_PATH + DATA_DEFAULT_LANGUAGE + ".yaml",
@@ -50,22 +84,35 @@ async def setup_yaml_parser(hass):
 
         return translations
 
-    def load_yaml(fname, args={}, user_id=None, language=None, translations=None):
+    def load_yaml(
+        fname: str,
+        args: Dict[str, Any] = {},
+        user_id: Optional[str] = None,
+        language: Optional[str] = None,
+        translations: Optional[TranslationDict] = None,
+    ) -> LoadedYAML:
+        """Load a YAML file."""
+
         return parse_yaml(fname, args, user_id, language, translations)
 
     def parse_yaml(
-        fname,
-        args={},
-        user_id=None,
-        language=None,
-        translations=None,
-        skip_translations=False,
-    ):
+        fname: str,
+        args: Dict[str, Any] = {},
+        user_id: Optional[str] = None,
+        language: Optional[str] = None,
+        translations: Optional[TranslationDict] = None,
+        skip_translations: bool = False,
+    ) -> LoadedYAML:
+        """Parse a YAML file."""
+
+        template: str = ""
+
         try:
-            jinja = hass.data.get(_ENVIRONMENT)
+            jinja: TemplateEnvironment = hass.data.get(_ENVIRONMENT)
 
             if not skip_translations and translations is None:
                 translations = load_translations(language)
+
             template = jinja.get_template(fname).render(
                 {
                     **args,
@@ -73,17 +120,19 @@ async def setup_yaml_parser(hass):
                     JINJA_VARIABLE_USER_ID: user_id,
                 }
             )
-
             stream = io.StringIO(template)
             stream.name = fname
-
             return load(stream, None, user_id, translations) or OrderedDict()
         except hass_loader.yaml.YAMLError as exc:
             _LOGGER.error(f"{str(exc)}: {template}")
             raise HomeAssistantError(exc) from exc
 
-    def process_node(loader, node):
-        args = {}
+    def process_node(
+        loader: CustomLoader, node: hass_loader.yaml.Node
+    ) -> List[Union[str, Dict[str, Any]]]:
+        """Process include nodes to see if there are arguments."""
+
+        args: Dict[str, Any] = {}
 
         if isinstance(node.value, str):
             value = node.value
@@ -93,7 +142,9 @@ async def setup_yaml_parser(hass):
         fname = os.path.abspath(os.path.join(os.path.dirname(loader.name), value))
         return [fname, args]
 
-    def _include_yaml(loader, node):
+    def _include_yaml(loader: CustomLoader, node: hass_loader.yaml.Node) -> LoadedYAML:
+        """Handle !include tag"""
+
         node_values = process_node(loader, node)
 
         try:
@@ -106,16 +157,23 @@ async def setup_yaml_parser(hass):
             _LOGGER.error("Unable to include file %s: %s", node_values[0], exc)
             raise HomeAssistantError(exc)
 
-    def _include_dir_list_yaml(loader, node):
+    def _include_dir_list_yaml(
+        loader: CustomLoader, node: hass_loader.yaml.Node
+    ) -> LoadedYAML:
+        """Handle !include_dir_list tag"""
         node_values = process_node(loader, node)
-        loc = os.path.join(os.path.dirname(loader.name), node_values[0])
+        loc: str = os.path.join(os.path.dirname(loader.name), node_values[0])
         return [
             load_yaml(f, node_values[1], loader._user_id, None, loader._translations)
             for f in hass_loader._find_files(loc, "*.yaml")
             if os.path.basename(f) != hass_loader.SECRET_YAML
         ]
 
-    def _include_dir_merge_list_yaml(loader, node):
+    def _include_dir_merge_list_yaml(
+        loader: CustomLoader, node: hass_loader.yaml.Node
+    ) -> LoadedYAML:
+        """Handle !include_dir_merge_list tag"""
+
         node_values = process_node(loader, node)
         loc: str = os.path.join(os.path.dirname(loader.name), node_values[0])
         merged_list: List[hass_loader.JSON_TYPE] = []
@@ -129,10 +187,14 @@ async def setup_yaml_parser(hass):
                 merged_list.extend(loaded_yaml)
         return hass_loader._add_reference(merged_list, loader, node)
 
-    def _include_dir_named_yaml(loader, node):
+    def _include_dir_named_yaml(
+        loader: CustomLoader, node: hass_loader.yaml.Node
+    ) -> LoadedYAML:
+        """Handle !include_dir_named tag"""
+
         node_values = process_node(loader, node)
-        mapping: OrderedDict = OrderedDict()
-        loc = os.path.join(os.path.dirname(loader.name), node_values[0])
+        mapping: OrderedDictType = OrderedDict()
+        loc: str = os.path.join(os.path.dirname(loader.name), node_values[0])
         for fname in hass_loader._find_files(loc, "*.yaml"):
             filename = os.path.splitext(os.path.basename(fname))[0]
             if os.path.basename(fname) == hass_loader.SECRET_YAML:
@@ -142,34 +204,37 @@ async def setup_yaml_parser(hass):
             )
         return hass_loader._add_reference(mapping, loader, node)
 
-    def _uncache_file(_loader, node):
+    def _uncache_file(_loader: CustomLoader, node: hass_loader.yaml.Node) -> str:
+        """Handle !file tag"""
+
         path = node.value
         timestamp = str(time.time())
         if "?" in path:
             return f"{path}&{timestamp}"
         return f"{path}?{timestamp}"
 
-    def load(stream, Loader, user_id=None, translations=None):
+    def load(
+        stream: StringIO,
+        Loader: CustomLoader,
+        user_id: Optional[str] = None,
+        translations: Optional[TranslationDict] = None,
+    ) -> LoadedYAML:
+        """Load a YAML file."""
+
         # if Loader is None:
         #     hass_loader.yaml.load_warning("load")
         Loader = CustomLoader
 
-        loader = None
-        if isinstance(Loader, CustomLoader):
-            loader = Loader(stream, user_id, translations)
-        else:
-            loader = Loader(stream)
+        # loader: CustomLoader = None
+        # if isinstance(Loader, CustomLoader):
+        loader = Loader(stream, user_id, translations)
+        # else:
+        # loader = Loader(stream)
 
         try:
             return loader.get_single_data()
         finally:
             loader.dispose()
-
-    class CustomLoader(hass_loader.SafeLineLoader):
-        def __init__(self, stream, user_id=None, translations=None):
-            super().__init__(stream)
-            self._user_id = user_id
-            self._translations = translations
 
     hass_loader.load_yaml = load_yaml
     dashboard.load_yaml = load_yaml

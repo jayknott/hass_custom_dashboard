@@ -17,7 +17,7 @@ from homeassistant.helpers.device_registry import EVENT_DEVICE_REGISTRY_UPDATED
 from homeassistant.helpers.entity_registry import EVENT_ENTITY_REGISTRY_UPDATED
 
 from .automation import update_built_in_automations
-from .counters import update_built_in_counters
+from .counters import update_counters
 from .registry import update_area_registry, update_entity_registry
 from .template import update_template_areas_global, update_template_entities_global
 from .const import (
@@ -83,6 +83,6 @@ async def handle_update_area(hass: HomeAssistant, event: Event):
         await update_template_entities_global(hass)
 
     if action in [CONF_CREATE, CONF_REMOVE]:
-        await update_built_in_counters(hass)
+        await update_counters(hass)
 
     # trigger automations
