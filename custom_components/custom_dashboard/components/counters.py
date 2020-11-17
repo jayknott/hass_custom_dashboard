@@ -405,7 +405,7 @@ async def _create_counter(
                     CONF_VALUE_TEMPLATE: Template(templates["state_template"]),
                     CONF_ATTRIBUTE_TEMPLATES: {
                         CONF_COUNT: Template(templates["count_template"]),
-                        CONF_ENTITIES: Template(templates["entities_template"]),
+                        CONF_ENTITIES: Template(templates["entity_template"]),
                         CONF_TRACKED_ENTITY_COUNT: Template(
                             templates["tracked_count_template"]
                         ),
