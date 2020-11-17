@@ -1,11 +1,7 @@
-import logging
-
 from homeassistant.const import CONF_TYPE, STATE_UNKNOWN
 from homeassistant.helpers.entity import Entity, async_generate_entity_id
 
 from .const import DOMAIN
-
-_LOGGER = logging.getLogger(__name__)
 
 
 def generate_id(hass, domain, deviceID):

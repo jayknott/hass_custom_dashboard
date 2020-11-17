@@ -11,7 +11,7 @@ from homeassistant.const import (
 )
 from homeassistant.helpers.entity import Entity
 
-from .const import (
+from ..const import (
     CONF_ENTITY_PLATFORM,
     BUILT_IN_AREA_SELECT,
     BUILT_IN_ENTITY_AREA_SELECT,
@@ -80,7 +80,7 @@ async def update_built_in_input_select(hass):
             {
                 CONF_NAME: f"{TITLE} Entity Type",
                 CONF_ICON: "mdi:puzzle",
-                CONF_OPTIONS: ENTITY_TYPES
+                CONF_OPTIONS: ENTITY_TYPES,
             },
         )
         to_add.append(built_in[BUILT_IN_ENTITY_TYPE_SELECT])

@@ -15,7 +15,7 @@ from homeassistant.const import (
 )
 from homeassistant.helpers.template import Template
 
-from .const import (
+from ..const import (
     BUILT_IN_AREA_SELECT,
     # BUILT_IN_AREAS,
     BUILT_IN_AREA_SELECTED,

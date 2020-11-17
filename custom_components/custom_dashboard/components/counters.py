@@ -21,7 +21,7 @@ from homeassistant.helpers.template import Template
 
 from .binary_sensor import create_binary_sensor_entity
 from .registry import AreaSettings, EntitySettings, hass_areas
-from .const import (
+from ..const import (
     CONF_COUNT,
     CONF_COUNTERS,
     CONF_ENTITIES,
@@ -262,7 +262,7 @@ def _super_counter_entities(hass: HomeAssistant, regex: str) -> List[str]:
     """Enumerate the counters that this super counter will check for updates on."""
 
     entity_ids: List[str] = hass.data[DOMAIN][CONF_COUNTERS]
-    _LOGGER.warn(f"{regex}:::::{entity_ids}")
+
     return [
         entity_id for entity_id in entity_ids if re.search(regex, entity_id) is not None
     ]

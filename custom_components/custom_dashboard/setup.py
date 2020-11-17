@@ -6,23 +6,25 @@ from homeassistant.const import EVENT_HOMEASSISTANT_STARTED
 from homeassistant.core import Event, HomeAssistant
 from homeassistant.helpers.typing import ConfigType
 
-from .automation import update_built_in_automations
-from .counters import setup_counters
+from .components.automation import update_built_in_automations
+from .components.counters import setup_counters
+from .components.input_boolean import setup_input_booleans
+from .components.input_number import update_built_in_input_number
+from .components.input_select import update_built_in_input_select
+from .components.input_text import update_built_in_input_text
+from .components.lovelace import update_lovelace
+from .components.registry import setup_registries, update_registries
+from .components.yaml_parser import setup_yaml_parser
 from .events import setup_events
 from .files import setup_files
-from .input_boolean import setup_input_booleans
-from .input_number import update_built_in_input_number
-from .input_select import update_built_in_input_select
-from .input_text import update_built_in_input_text
-from .lovelace import update_lovelace
-from .registry import setup_registries, update_registries
+
 from .services import setup_services
-from .template import (
+from .components.template import (
     setup_template,
     update_template_areas_global,
     update_template_entities_global,
 )
-from .yaml_parser import setup_yaml_parser
+
 from .const import (
     CONF_AREAS,
     CONF_BUILT_IN_ENTITIES,

@@ -11,7 +11,7 @@ from homeassistant.helpers.template import (
     TemplateEnvironment,
 )
 
-from .const import (
+from ..const import (
     BUILT_IN_ENTITY_IDS,
     CONF_AREAS,
     CONF_ENTITIES,

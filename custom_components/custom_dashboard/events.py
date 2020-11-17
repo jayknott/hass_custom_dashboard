@@ -1,46 +1,24 @@
 import logging
 
 from homeassistant.components.automation import EVENT_AUTOMATION_RELOADED
-from homeassistant.const import (
-    ATTR_AREA_ID,
-    ATTR_ID,
-    ATTR_NAME,
-    CONF_DEFAULT,
-    CONF_ENTITY_ID,
-    CONF_ICON,
-    CONF_NAME,
-    CONF_TYPE,
-)
 from homeassistant.core import Event, HomeAssistant
 from homeassistant.helpers.area_registry import EVENT_AREA_REGISTRY_UPDATED
 from homeassistant.helpers.device_registry import EVENT_DEVICE_REGISTRY_UPDATED
 from homeassistant.helpers.entity_registry import EVENT_ENTITY_REGISTRY_UPDATED
 
-from .automation import update_built_in_automations
-from .counters import update_counters
-from .registry import update_area_registry, update_entity_registry
-from .template import update_template_areas_global, update_template_entities_global
+from .components.automation import update_built_in_automations
+from .components.counters import update_counters
+from .components.registry import update_area_registry, update_entity_registry
+from .components.template import (
+    update_template_areas_global,
+    update_template_entities_global,
+)
 from .const import (
-    BINARY_SENSOR_CLASS_MAP,
     CONF_ACTION,
-    CONF_AREAS,
     CONF_CREATE,
-    CONF_ENTITIES,
-    CONF_ORIGINAL_AREA_ID,
-    CONF_ORIGINAL_NAME,
-    CONF_ORIGINAL_TYPE,
     CONF_REMOVE,
-    CONF_SORT_ORDER,
     CONF_UPDATE,
-    CONF_VISIBLE,
-    COVER_CLASS_MAP,
-    DEFAULT_ROOM_ICON,
-    DEFAULT_SORT_ORDER,
-    DOMAIN,
     EVENT_SETTINGS_CHANGED,
-    PLATFORM_BINARY_SENSOR,
-    PLATFORM_MAP,
-    SENSOR_CLASS_MAP,
 )
 
 _LOGGER = logging.getLogger(__name__)

@@ -22,7 +22,7 @@ from homeassistant.helpers.template import TemplateEnvironment, _ENVIRONMENT
 from homeassistant.util.yaml import loader as hass_loader
 from homeassistant.components.lovelace import dashboard
 
-from .const import (
+from ..const import (
     DATA_DEFAULT_LANGUAGE,
     TRANSLATIONS_PATH,
     JINJA_VARIABLE_TRANSLATE,

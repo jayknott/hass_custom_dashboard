@@ -16,7 +16,7 @@ from homeassistant.const import (
 )
 from homeassistant.helpers.entity import Entity
 
-from .const import (
+from ..const import (
     CONF_ENTITY_PLATFORM,
     BUILT_IN_AREA_SORT_ORDER,
     BUILT_IN_ENTITY_SORT_ORDER,

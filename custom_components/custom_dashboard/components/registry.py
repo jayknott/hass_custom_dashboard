@@ -18,7 +18,7 @@ from homeassistant.helpers.device_registry import DeviceEntry
 from homeassistant.helpers.area_registry import AreaEntry, AreaRegistry
 from homeassistant.helpers.storage import Store
 
-from .const import (
+from ..const import (
     BINARY_SENSOR_CLASS_MAP,
     CONF_AREAS,
     CONF_ENTITIES,

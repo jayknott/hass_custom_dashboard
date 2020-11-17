@@ -37,7 +37,7 @@ from homeassistant.helpers.service import (
 )
 from homeassistant.helpers.template import Template
 
-from .const import (
+from ..const import (
     BUILT_IN_AREA_SORT_ORDER,
     BUILT_IN_AREA_VISIBLE,
     BUILT_IN_ENTITY_AREA_SELECT,

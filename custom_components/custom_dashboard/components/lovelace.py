@@ -29,7 +29,7 @@ from homeassistant.const import (
 )
 
 # from .binary_sensor import update_built_in_binary_sensors
-from .const import (
+from ..const import (
     CONF_MISSING_RESOURCES,
     DOMAIN,
     HACS_CUSTOM_REPOSITORIES,
