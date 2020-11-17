@@ -64,7 +64,7 @@ async def update_built_in_counters(hass: HomeAssistant):
 
         sensor = hass.states.get(entity_id)
         if sensor is not None and not sensor.attributes.get("restored", False):
-            return
+            await platform.async_remove_entity(entity_id)
 
         # select_area = ""
         # if area is not None:
@@ -159,12 +159,12 @@ async def update_built_in_counters(hass: HomeAssistant):
 
         sensor = hass.states.get(entity_id)
         if sensor is not None and not sensor.attributes.get("restored", False):
-            try:
-                platform.async_remove_entity(entity_id)
-            except:
-                pass
+            # try:
+            await platform.async_remove_entity(entity_id)
+            # except:
+            # pass
 
-        area_regex = f"area_{area[ATTR_ID]}_" if area is not None else "area_\\w+_"
+        area_regex = f"area_{area[ATTR_ID]}_" if area is not None else "area_[a-z\\d]+_"
         regex = f"binary_sensor\\.{DOMAIN}_{area_regex}{prefix_string}({'|'.join(entity_types)})"
 
         entity_ids = [
@@ -174,9 +174,6 @@ async def update_built_in_counters(hass: HomeAssistant):
         ]
 
         if len(entity_ids) == 0:
-            _LOGGER.warn(
-                f"no entities for super {area[ATTR_NAME] if area is not None else ''} {name}"
-            )
             return
 
         state_entities = [
