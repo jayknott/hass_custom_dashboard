@@ -174,6 +174,7 @@ async def update_built_in_counters(hass: HomeAssistant):
         ]
 
         if len(entity_ids) == 0:
+            _LOGGER.warn(f"no entities for super {area_title} {name_title}")
             return
 
         state_entities = [
