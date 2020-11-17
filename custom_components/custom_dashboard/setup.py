@@ -1,31 +1,22 @@
 """Setup Custom Dashboard"""
-from logging import Logger
 from homeassistant.config_entries import ConfigEntry
 import logging
 
 from homeassistant import config_entries
-from homeassistant.components.automation import EVENT_AUTOMATION_RELOADED
 from homeassistant.const import EVENT_HOMEASSISTANT_STARTED
-from homeassistant.core import Config, Event, HomeAssistant
-from homeassistant.helpers.area_registry import EVENT_AREA_REGISTRY_UPDATED
-from homeassistant.helpers.device_registry import EVENT_DEVICE_REGISTRY_UPDATED
-from homeassistant.helpers.entity_registry import EVENT_ENTITY_REGISTRY_UPDATED
+from homeassistant.core import Event, HomeAssistant
 from homeassistant.helpers.typing import ConfigType
 
 from .automation import update_built_in_automations
 from .counters import update_built_in_counters
+from .events import setup_events
 from .files import update_files
 from .input_boolean import update_built_in_input_boolean
 from .input_number import update_built_in_input_number
 from .input_select import update_built_in_input_select
 from .input_text import update_built_in_input_text
 from .lovelace import update_lovelace
-from .registry import (
-    setup_registries,
-    update_area_registry,
-    update_entity_registry,
-    update_registries,
-)
+from .registry import setup_registries, update_registries
 
 from .settings import (
     save_setting,
@@ -39,19 +30,13 @@ from .template import (
 )
 from .yaml_parser import setup_yaml_parser
 from .const import (
-    CONF_ACTION,
     CONF_AREA,
     CONF_AREAS,
     CONF_BUILT_IN_ENTITIES,
-    CONF_CREATE,
     CONF_ENTITIES,
     CONF_ENTITY,
     CONF_MISSING_RESOURCES,
-    CONF_REMOVE,
-    CONF_UPDATE,
     DOMAIN,
-    # EVENT_MODULE_SETUP_COMPLETE,
-    EVENT_SETTINGS_CHANGED,
     SERVICE_SET_AREA,
     SERVICE_SET_ENTITY,
     TITLE,
@@ -86,33 +71,6 @@ async def component_setup(hass: HomeAssistant, config: ConfigType):
         CONF_ENTITIES: [],
     }
 
-    async def handle_automation_reloaded(_event: Event):
-        await update_built_in_automations(hass, True)
-
-    async def handle_registry_updated(event: Event):
-        await update_area_registry(hass)
-        await update_template_areas_global(hass)
-
-        action: str = event.data.get(CONF_ACTION)
-
-        if action in [CONF_REMOVE]:
-            pass
-            # Remove area settings
-            # Remove area id from entities settings
-
-        if action in [CONF_REMOVE, CONF_UPDATE]:
-            await update_entity_registry(hass)
-            await update_template_entities_global(hass)
-
-        if action in [CONF_CREATE, CONF_REMOVE]:
-            await update_built_in_counters(hass)
-
-        # trigger automations
-
-    async def handle_area_registry_updated(event: Event):
-        _LOGGER.warn(f"area updated::: {event}")
-        await handle_registry_updated(event)
-
     async def handle_hass_started(_event: Event):
         await update_registries(hass)
         await update_template_areas_global(hass)
@@ -124,11 +82,7 @@ async def component_setup(hass: HomeAssistant, config: ConfigType):
         create_task(update_built_in_input_text(hass))
         create_task(update_built_in_automations(hass))
         create_task(update_lovelace(hass, config))
-        hass.bus.async_listen(EVENT_SETTINGS_CHANGED, handle_registry_updated)
-        hass.bus.async_listen(EVENT_AUTOMATION_RELOADED, handle_automation_reloaded)
-        hass.bus.async_listen(EVENT_AREA_REGISTRY_UPDATED, handle_area_registry_updated)
-        hass.bus.async_listen(EVENT_DEVICE_REGISTRY_UPDATED, handle_registry_updated)
-        hass.bus.async_listen(EVENT_ENTITY_REGISTRY_UPDATED, handle_registry_updated)
+        create_task(setup_events(hass))
 
     if DOMAIN not in hass.config_entries.async_domains():
         await hass.config_entries.async_add(config_entries.ConfigEntry())

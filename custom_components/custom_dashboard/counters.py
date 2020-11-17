@@ -8,13 +8,11 @@ from homeassistant.components.template.binary_sensor import CONF_ATTRIBUTE_TEMPL
 from homeassistant.const import (
     ATTR_ID,
     ATTR_AREA_ID,
-    ATTR_NAME,
     CONF_ENTITY_ID,
     CONF_FRIENDLY_NAME,
     CONF_ICON_TEMPLATE,
     CONF_TYPE,
     CONF_VALUE_TEMPLATE,
-    CONF_STATE,
     STATE_OFF,
     STATE_ON,
 )
@@ -31,7 +29,6 @@ from .const import (
     CONF_TRACKED_ENTITY_COUNT,
     CONF_VISIBLE,
     DOMAIN,
-    JINJA_VARIABLE_ENTITIES,
     PLATFORM_BINARY_SENSOR,
     SECURITY_ENTITY_TYPE_OFF_STATES,
     SECURITY_ENTITY_TYPES,

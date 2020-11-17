@@ -1,4 +1,3 @@
-from homeassistant.core import HomeAssistant
 import logging
 import re
 
@@ -12,6 +11,7 @@ from homeassistant.const import (
     CONF_NAME,
     CONF_TYPE,
 )
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers.storage import Store
 
 from .const import (
