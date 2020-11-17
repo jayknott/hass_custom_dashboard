@@ -153,6 +153,9 @@ async def hass_entities(hass):
             for entity in hass.helpers.entity_registry.async_entries_for_device(
                 hass.data["entity_registry"], device.id
             ):
+                if entity.disabled:
+                    continue
+
                 entity_data = data.get(entity.entity_id, {})
                 entity_state = hass.states.get(entity.entity_id)
                 entity_name = entity_state.name if entity_state is not None else None

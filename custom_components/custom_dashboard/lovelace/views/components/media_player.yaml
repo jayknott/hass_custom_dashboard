@@ -6,17 +6,17 @@
 {% else %}
   {% set display_name = friendly_name %}
   {% if room_name is defined and entity_name is defined and entities_name is defined %}
-    {% 
+    {%
       set display_name =
         display_name |
         regex_replace(find=room_name + ' | ' + room_name , replace='', ignorecase=True) |
         regex_replace(find=entities_name + ' | ' + entities_name , replace='', ignorecase=True) |
         regex_replace(find=entity_name + ' | ' + entity_name , replace='', ignorecase=True)
-        
+
     %}
   {% endif %}
   {% if entity_name_2 is defined and entities_name_2 is defined %}
-    {% 
+    {%
       set display_name =
         display_name |
         regex_replace(find=entities_name_2 + ' | ' + entities_name_2 , replace='', ignorecase=True) |
@@ -38,5 +38,5 @@ icon: {{ icon }}
 source: icon
 style: |
     ha-card {
-      overflow: hidden;
+      overflow: hidden !important;
     }
