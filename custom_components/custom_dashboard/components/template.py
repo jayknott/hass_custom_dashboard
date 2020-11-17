@@ -46,7 +46,9 @@ async def setup_template(hass: HomeAssistant) -> None:
 
     jinja.globals[JINJA_VARIABLE_ADDITIONAL] = JINJA_VARIABLES
     jinja.globals[JINJA_VARIABLE_CONFIGURATION] = {
-        LOVELACE: os.path.join(os.path.dirname(__file__), LOVELACE_DIR),
+        LOVELACE: os.path.abspath(
+            os.path.join(os.path.dirname(__file__), os.pardir, LOVELACE_DIR)
+        ),
         CONF_MISSING_RESOURCES: hass.data[DOMAIN][CONF_MISSING_RESOURCES],
     }
     jinja.globals[JINJA_VARIABLE_BUILT_IN_ENTITIES] = BUILT_IN_ENTITY_IDS

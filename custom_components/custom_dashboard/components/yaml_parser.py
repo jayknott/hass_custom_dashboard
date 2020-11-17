@@ -60,9 +60,12 @@ async def setup_yaml_parser(hass: HomeAssistant) -> None:
 
         # Always load the default language
         translations: TranslationDict = parse_yaml(
-            os.path.join(
-                os.path.dirname(__file__),
-                TRANSLATIONS_PATH + DATA_DEFAULT_LANGUAGE + ".yaml",
+            os.path.abspath(
+                os.path.join(
+                    os.path.dirname(__file__),
+                    os.pardir,
+                    TRANSLATIONS_PATH + DATA_DEFAULT_LANGUAGE + ".yaml",
+                )
             ),
             skip_translations=True,
         )
@@ -72,9 +75,12 @@ async def setup_yaml_parser(hass: HomeAssistant) -> None:
             try:
                 translations.update(
                     parse_yaml(
-                        os.path.join(
-                            os.path.dirname(__file__),
-                            TRANSLATIONS_PATH + language + ".yaml",
+                        os.path.abspath(
+                            os.path.join(
+                                os.path.dirname(__file__),
+                                os.pardir,
+                                TRANSLATIONS_PATH + language + ".yaml",
+                            )
                         ),
                         skip_translations=True,
                     )

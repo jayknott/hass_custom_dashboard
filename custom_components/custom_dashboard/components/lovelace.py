@@ -128,8 +128,13 @@ async def update_dashboards(hass):
         CONF_ICON: LOVELACE_DASHBOARD_ICON,
         CONF_SHOW_IN_SIDEBAR: True,
         CONF_REQUIRE_ADMIN: False,
-        CONF_FILENAME: os.path.join(
-            os.path.dirname(__file__), LOVELACE_DIR, LOVELACE_FILENAME_SOURCE
+        CONF_FILENAME: os.path.abspath(
+            os.path.join(
+                os.path.dirname(__file__),
+                os.pardir,
+                LOVELACE_DIR,
+                LOVELACE_FILENAME_SOURCE,
+            )
         ),
     }
 
