@@ -66,12 +66,6 @@ async def update_built_in_counters(hass: HomeAssistant):
         if sensor is not None and not sensor.attributes.get("restored", False):
             await platform.async_remove_entity(entity_id)
 
-        # select_area = ""
-        # if area is not None:
-        #     select_area = f", 'equalto', '{area[ATTR_ID]}'"
-
-        # state_filter = "selectattr" if not reject else "rejectattr"
-
         # Enter the entities seperately so the template listener will update faster
         entity_ids = [
             entity[CONF_ENTITY_ID]
@@ -88,7 +82,6 @@ async def update_built_in_counters(hass: HomeAssistant):
         ]
 
         if len(entity_ids) == 0:
-            # _LOGGER.error(f"No entities for {entity_type} {states}")
             return None
 
         state_template = []
@@ -105,16 +98,6 @@ async def update_built_in_counters(hass: HomeAssistant):
                 f"('{id}' if states('{id}') {'not ' if reject else ''}in {states} else '')"
             )
 
-        # template = f"""
-        #     states |
-        #     selectattr('{CONF_ENTITY_ID}', 'in',
-        #         {available_entities_template}
-        #     ) |
-        #     {state_filter}('{CONF_STATE}', 'in', {states}) |
-        #     map(attribute='{CONF_ENTITY_ID}') |
-        #     list
-        # """
-
         await platform.async_add_entities(
             [
                 await create_binary_sensor_entity(
@@ -130,15 +113,12 @@ async def update_built_in_counters(hass: HomeAssistant):
                             CONF_COUNT: Template(
                                 f"{{{{ {' + '.join(count_template)} }}}}"
                             ),
-                            # CONF_COUNT: Template(f"{{{{ 0 }}}}"),
-                            # CONF_ENTITIES: Template(f"{{{{ {template} }}}}"),
                             CONF_ENTITIES: Template(
                                 f"{{{{ [{', '.join(entity_template)}] | select('!=', '') | list }}}}"
                             ),
                             CONF_TRACKED_ENTITY_COUNT: Template(
                                 f"{{{{ {len(entity_ids)} }}}}"
                             ),
-                            # CONF_TRACKED_ENTITY_COUNT: Template(f"{{{{ 0 }}}}"),
                         },
                     },
                 )
@@ -161,10 +141,7 @@ async def update_built_in_counters(hass: HomeAssistant):
 
         sensor = hass.states.get(entity_id)
         if sensor is not None and not sensor.attributes.get("restored", False):
-            # try:
             await platform.async_remove_entity(entity_id)
-            # except:
-            # pass
 
         area_regex = f"area_{area[ATTR_ID]}_" if area is not None else "area_[a-z\\d]+_"
         regex = f"binary_sensor\\.{DOMAIN}_{area_regex}{prefix_string}({'|'.join(entity_types)})"
@@ -176,24 +153,19 @@ async def update_built_in_counters(hass: HomeAssistant):
         ]
 
         if len(entity_ids) == 0:
-            _LOGGER.warn(f"no entities for super {area_title} {name_title}")
             return
 
-        state_entities = [
-            f"is_state('{entity_id}', '{STATE_ON}')" for entity_id in entity_ids
-        ]
-
-        available_entities_template = f"""
-            states |
-            selectattr('{CONF_ENTITY_ID}', 'in', {entity_ids}) |
-            list
-        """
-
-        # template = f"""
-        #     {available_entities_template} |
-        #     selectattr('{CONF_STATE}', 'equalto', '{STATE_ON}') |
-        #     list
-        # """
+        state_template = []
+        count_template = []
+        entity_template = []
+        entity_count_template = []
+        for id in entity_ids:
+            state_template.append(f"is_state('{id}', '{STATE_ON}')")
+            count_template.append(f"(state_attr('{id}', '{CONF_COUNT}'))")
+            entity_template.append(f"(state_attr('{id}', '{CONF_ENTITIES}'))")
+            entity_count_template.append(
+                f"(state_attr('{id}', '{CONF_TRACKED_ENTITY_COUNT}'))"
+            )
 
         await platform.async_add_entities(
             [
@@ -204,27 +176,18 @@ async def update_built_in_counters(hass: HomeAssistant):
                         CONF_FRIENDLY_NAME: f"{TITLE} {area_title}{name_title}",
                         CONF_ICON_TEMPLATE: Template("mdi:counter"),
                         CONF_VALUE_TEMPLATE: Template(
-                            f"{{{{ {' or '.join(state_entities)} }}}}"
+                            f"{{{{ {' or '.join(state_template)} }}}}"
                         ),
                         CONF_ATTRIBUTE_TEMPLATES: {
                             CONF_COUNT: Template(
-                                f"{{{{ {available_entities_template} | sum(attribute='attributes.{CONF_COUNT}') }}}}"
+                                f"{{{{ {' + '.join(count_template)} }}}}"
                             ),
-                            # CONF_COUNT: Template(f"{{{{ 0 }}}}"),
-                            # CONF_ENTITIES: Template(
-                            #     f"""
-                            #     {{% set ns = namespace(entities=[]) %}}
-                            #     {{% for entities in {template} | map(attribute='attributes.{CONF_ENTITIES}') | list %}}
-                            #         {{% set ns.entities = ns.entities + entities %}}
-                            #     {{% endfor %}}
-                            #     {{{{ ns.entities }}}}
-                            # """
-                            # ),
-                            CONF_ENTITIES: Template(f"{{{{ [] }}}}"),
+                            CONF_ENTITIES: Template(
+                                f"{{{{ {' + '.join(entity_template)} }}}}"
+                            ),
                             CONF_TRACKED_ENTITY_COUNT: Template(
-                                f"{{{{ {available_entities_template} | sum(attribute='attributes.{CONF_TRACKED_ENTITY_COUNT}') }}}}"
+                                f"{{{{ {' + '.join(entity_count_template)} }}}}"
                             ),
-                            # CONF_TRACKED_ENTITY_COUNT: Template(f"{{{{ 0 }}}}"),
                         },
                     },
                 )
