@@ -94,14 +94,12 @@ async def update_built_in_counters(hass: HomeAssistant):
         state_template = []
         count_template = []
         entity_template = []
-        for entity_id in entity_ids:
+        for id in entity_ids:
             state_template.append(
-                f"states('{entity_id}') {'not ' if reject else ''}in {states}"
+                f"states('{id}') {'not ' if reject else ''}in {states}"
             )
-            count_template.append(f"(1 if states('{entity_id}') in {states} else 0)")
-            entity_template.append(
-                f"('{entity_id}' if states('{entity_id}') in {states} else '')"
-            )
+            count_template.append(f"(1 if states('{id}') in {states} else 0)")
+            entity_template.append(f"('{id}' if states('{id}') in {states} else '')")
 
         # template = f"""
         #     states |
