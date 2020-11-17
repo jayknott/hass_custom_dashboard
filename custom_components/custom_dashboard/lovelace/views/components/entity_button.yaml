@@ -111,7 +111,7 @@ hold_action:
           child_card: true
           consolidate_entities: true
           hide_header: true
-    {% if "{:b}".format(state_attr(entity, "supported_features") | default(0))[-5] == "1" %}
+    {% if "{:b}".format(state_attr(entity, "supported_features") | default("0"))[-5] == "1" %}
       actions:
       {%
           set default_colors = [
