@@ -6,17 +6,17 @@
 {% else %}
   {% set display_name = friendly_name %}
   {% if room_name is defined and entity_name is defined and entities_name is defined %}
-    {% 
+    {%
       set display_name =
         display_name |
         regex_replace(find=room_name + ' | ' + room_name , replace='', ignorecase=True) |
         regex_replace(find=entities_name + ' | ' + entities_name , replace='', ignorecase=True) |
         regex_replace(find=entity_name + ' | ' + entity_name , replace='', ignorecase=True)
-        
+
     %}
   {% endif %}
   {% if entity_name_2 is defined and entities_name_2 is defined %}
-    {% 
+    {%
       set display_name =
         display_name |
         regex_replace(find=entities_name_2 + ' | ' + entities_name_2 , replace='', ignorecase=True) |
@@ -79,7 +79,7 @@ hold_action:
           #brightnessValue {
             color: var(--primary-text-color);
           }
-          
+
           ha-icon {
             color: var(--paper-item-icon-color);
           }
@@ -111,7 +111,7 @@ hold_action:
           child_card: true
           consolidate_entities: true
           hide_header: true
-    {% if "{:b}".format(state_attr(entity, "supported_features"))[-5] == "1" %}
+    {% if "{:b}".format(state_attr(entity, "supported_features") | default(0))[-5] == "1" %}
       actions:
       {%
           set default_colors = [
@@ -135,22 +135,22 @@ hold_action:
               "service_color": "#ffc58f",
               "name": _custom_dashboard_trans.color.warm
             },
-            { 
+            {
               "color": "#00bfff",
               "service_color": "#00bfff",
               "name": _custom_dashboard_trans.color.dodger_blue
             },
-            { 
+            {
               "color": "#0000ff",
               "service_color": "#0000ff",
               "name": _custom_dashboard_trans.color.blue
             },
-            { 
+            {
               "color": "#00ff00",
               "service_color": "#00ff00",
               "name": _custom_dashboard_trans.color.green
             },
-            { 
+            {
               "color": "#a700ff",
               "service_color": "#a700ff",
               "name": _custom_dashboard_trans.color.black
