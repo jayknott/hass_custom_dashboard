@@ -1,11 +1,10 @@
-# custom_dashboard
-
 {% set area = area | from_json %}
 {% set room_name = area.name %}
 {% set room_slug = room_name | lower | replace(" ", "_") %}
 
 {% set entities = _custom_dashboard_entities | selectattr('area_id', 'equalto', area.id) | selectattr('visible') | list %}
 {% set security = entities | selectattr('type', 'in', ['security_lock', 'security_opening']) | sort(attribute='sort_order,name') | list %}
+{% set security_sensors = entities | selectattr('type', 'in', ['security_motion', 'security_sensor']) | sort(attribute='sort_order,name') | list %}
 {% set motion_sensors = entities | selectattr('type', 'in', ['motion', 'occupancy']) | sort(attribute='sort_order,name') | list %}
 {% set temperatures = entities | selectattr('type', 'equalto', 'temperature') | sort(attribute='sort_order,name') | list %}
 {% set humidities = entities | selectattr('type', 'equalto', 'humidity') | sort(attribute='sort_order,name') | list %}
@@ -33,7 +32,9 @@
     'remote',
     'remote_button',
     'security_lock',
+    'security_motion',
     'security_opening',
+    'security_sensor',
     'sensor',
     'temperature',
   ]
@@ -43,7 +44,7 @@
 
 panel: true
 title: {{ room_name }}
-icon: mdi:square
+icon: {{ area.icon }}
 path: {{ 'room_' + room_slug }}
 visible: false
 cards:

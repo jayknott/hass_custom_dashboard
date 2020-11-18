@@ -1,5 +1,3 @@
-# custom_dashboard
-
 {% set friendly_name = state_attr(entity, 'friendly_name') | default(_custom_dashboard_trans.device.one, true) %}
 {% if name is defined %}
   {% set display_name = name %}
@@ -29,6 +27,10 @@ type: custom:button-card
 template: {{ template }}
 entity: {{ entity }}
 name: {{ display_name }}
+{% if navigation_path is defined %}
+tap_action:
+  navigation_path: {{ navigation_path }}
+{% endif %}
 {% if icon is defined %}
 icon: {{ icon }}
 {% endif %}

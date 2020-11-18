@@ -1,5 +1,3 @@
-# custom_dashboard
-
 template: status_sensor
 show_state: true
 show_label: true

@@ -47,18 +47,21 @@ cards:
                   - ../components/entity_button.yaml
                   - entity: binary_sensor.custom_dashboard_security
                     template: status_security
+                    navigation_path: security
             - card:
                 !include
                   - ../components/entity_button.yaml
                   - entity: binary_sensor.custom_dashboard_light
                     template: status_sensor
                     icon: hass:lightbulb
+                    navigation_path: lights
             - card:
                 !include
                   - ../components/entity_button.yaml
                   - entity: binary_sensor.custom_dashboard_something_on
                     template: status_sensor
                     icon: mdi:play-circle
+                    navigation_path: something_on
             {% if climate_main is not none %}
             - card:
                 !include

@@ -19,9 +19,11 @@ from ..const import (
     BUILT_IN_ENTITY_AREA_SELECT,
     BUILT_IN_ENTITY_ID_SELECT,
     BUILT_IN_ENTITY_TYPE_SELECT,
+    CONF_SECURITY,
     DOMAIN,
     ENTITY_TYPES,
     PLATFORM_INPUT_SELECT,
+    SECURITY_ENTITY_TYPES,
     TITLE,
 )
 from ..share import get_base
@@ -82,12 +84,19 @@ async def update_input_selects() -> None:
 
     # Entity type select
     if built_in.get(BUILT_IN_ENTITY_TYPE_SELECT) is None:
+        options = (
+            ENTITY_TYPES
+            + [
+                f"{CONF_SECURITY}_{security_entity_type}"
+                for security_entity_type in SECURITY_ENTITY_TYPES
+            ]
+        ).sort()
         built_in[BUILT_IN_ENTITY_TYPE_SELECT] = create_input_select_entity(
             f"{DOMAIN}_{BUILT_IN_ENTITY_TYPE_SELECT}",
             {
                 CONF_NAME: f"{TITLE} Entity Type",
                 CONF_ICON: "mdi:puzzle",
-                CONF_OPTIONS: ENTITY_TYPES,
+                CONF_OPTIONS: options,
             },
         )
         to_add.append(built_in[BUILT_IN_ENTITY_TYPE_SELECT])

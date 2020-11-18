@@ -12,6 +12,10 @@
     - areas: >
         {{ areas | to_json }}
 
+- !include security.yaml
+# - !include lights.yaml
+# - !include someting_on.yaml
+
 - !include settings.yaml
 - !include settings_areas.yaml
 - !include settings_entities.yaml
@@ -19,9 +23,9 @@
 {% if areas and (areas | length) >= 1 %}
 {% for area in areas %}
 - !include
-  - area.yaml
-  - area: >
-      {{ area | to_json }}
+    - area.yaml
+    - area: >
+        {{ area | to_json }}
 {% endfor %}
 {% endif %}
 {% endif %}
