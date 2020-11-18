@@ -1,4 +1,5 @@
-import logging
+"""Automations used in the integration."""
+from typing import List
 
 from homeassistant.components.automation import (
     AutomationEntity,
@@ -22,9 +23,8 @@ from homeassistant.const import (
     CONF_TYPE,
     CONF_VARIABLES,
 )
-
-# from homeassistant.helpers.area_registry import EVENT_AREA_REGISTRY_UPDATED
 from homeassistant.helpers.entity import Entity
+from homeassistant.helpers.entity_platform import EntityPlatform
 from homeassistant.helpers.script import (
     CONF_MAX,
     CONF_MAX_EXCEEDED,
@@ -54,7 +54,6 @@ from ..const import (
     BUILT_IN_AUTOMATION_POPULATE_AREA_SELECT,
     BUILT_IN_AUTOMATION_POPULATE_ENTITY_SELECT,
     BUILT_IN_ENTITY_IDS,
-    CONF_BUILT_IN_ENTITIES,
     CONF_ORIGINAL_NAME,
     CONF_SORT_ORDER,
     CONF_VISIBLE,
@@ -71,47 +70,39 @@ from ..const import (
     PLATFORM_INPUT_TEXT,
     TITLE,
 )
-
-_LOGGER = logging.getLogger(__name__)
+from ..share import get_base
 
 PLATFORM = PLATFORM_AUTOMATION
 
 
-def create_automation_entity(hass, device_id, conf={}):
-    entity_id = f"{PLATFORM}.{device_id}"
-    alias = conf.get(CONF_ALIAS, entity_id.split(".")[-1])
+class CustomAutomation(AutomationEntity):
+    """Automation that removes stored states."""
 
-    entity = CustomAutomation(
-        conf.get(CONF_ID, entity_id.split(".")[-1]),
-        alias,
-        conf.get(CONF_TRIGGER),
-        None,  # Not supporting contitions at this time
-        Script(
-            hass,
-            conf.get(CONF_ACTION),
-            alias,
-            PLATFORM_AUTOMATION,
-            running_description="automation actions",
-            script_mode=conf.get(CONF_MODE, SCRIPT_MODE_RESTART),
-            max_runs=conf.get(CONF_MAX),
-            max_exceeded=conf.get(CONF_MAX_EXCEEDED),
-            logger=_LOGGER,
-        ),
-        conf.get(CONF_INITIAL_STATE),
-        conf.get(CONF_VARIABLES),
-    )
-    entity.entity_id = entity_id
-    entity.editable = False
+    async def async_internal_added_to_hass(self):
+        await Entity.async_internal_added_to_hass(self)
 
-    return entity
+    async def async_internal_will_remove_from_hass(self):
+        await Entity.async_internal_will_remove_from_hass(self)
+
+    async def async_get_last_state(self):
+        pass
 
 
-async def update_built_in_automations(hass, force=False):
-    data = hass.data[DOMAIN]
-    built_in = data[CONF_BUILT_IN_ENTITIES]
-    platform = hass.data[CONF_ENTITY_PLATFORM][PLATFORM][0]
-    to_add = []
-    to_trigger = []
+async def setup_automations() -> None:
+    """Setup automations."""
+
+    await update_automations()
+
+
+async def update_automations(force: bool = False):
+    """Update built in automations."""
+
+    base = get_base()
+    hass = base.hass
+    built_in = base.built_in_entities
+    platform: EntityPlatform = hass.data[CONF_ENTITY_PLATFORM][PLATFORM][0]
+    to_add: List[CustomAutomation] = []
+    to_trigger: List[CustomAutomation] = []
 
     # Update area selectors
     if built_in.get(BUILT_IN_AUTOMATION_POPULATE_AREA_SELECT) is None or force:
@@ -119,7 +110,6 @@ async def update_built_in_automations(hass, force=False):
             built_in[
                 BUILT_IN_AUTOMATION_POPULATE_AREA_SELECT
             ] = create_automation_entity(
-                hass,
                 f"{DOMAIN}_{BUILT_IN_AUTOMATION_POPULATE_AREA_SELECT}",
                 {
                     CONF_ALIAS: f"{TITLE} update Area Selector",
@@ -180,7 +170,6 @@ async def update_built_in_automations(hass, force=False):
             built_in[
                 BUILT_IN_AUTOMATION_POPULATE_ENTITY_SELECT
             ] = create_automation_entity(
-                hass,
                 f"{DOMAIN}_{BUILT_IN_AUTOMATION_POPULATE_ENTITY_SELECT}",
                 {
                     CONF_ALIAS: f"{TITLE} update entity selector",
@@ -218,7 +207,6 @@ async def update_built_in_automations(hass, force=False):
     if built_in.get(BUILT_IN_AUTOMATION_AREA_CHANGED) is None or force:
         if not force:
             built_in[BUILT_IN_AUTOMATION_AREA_CHANGED] = create_automation_entity(
-                hass,
                 f"{DOMAIN}_{BUILT_IN_AUTOMATION_AREA_CHANGED}",
                 {
                     CONF_ALIAS: f"{TITLE} area selection changed",
@@ -339,7 +327,6 @@ async def update_built_in_automations(hass, force=False):
     if built_in.get(BUILT_IN_AUTOMATION_ENTITY_CHANGED) is None or force:
         if not force:
             built_in[BUILT_IN_AUTOMATION_ENTITY_CHANGED] = create_automation_entity(
-                hass,
                 f"{DOMAIN}_{BUILT_IN_AUTOMATION_ENTITY_CHANGED}",
                 {
                     CONF_ALIAS: f"{TITLE} entity selection changed",
@@ -475,12 +462,34 @@ async def update_built_in_automations(hass, force=False):
         hass.async_create_task(entity.async_trigger({}))
 
 
-class CustomAutomation(AutomationEntity):
-    async def async_internal_added_to_hass(self):
-        await Entity.async_internal_added_to_hass(self)
+def create_automation_entity(device_id: str, conf: dict = {}) -> CustomAutomation:
+    """Create a CustomAutomation instance."""
 
-    async def async_internal_will_remove_from_hass(self):
-        await Entity.async_internal_will_remove_from_hass(self)
+    base = get_base()
 
-    async def async_get_last_state(self):
-        pass
+    entity_id = f"{PLATFORM}.{device_id}"
+    alias: str = conf.get(CONF_ALIAS, entity_id.split(".")[-1])
+
+    entity = CustomAutomation(
+        conf.get(CONF_ID, entity_id.split(".")[-1]),
+        alias,
+        conf.get(CONF_TRIGGER),
+        None,  # Not supporting contitions at this time
+        Script(
+            base.hass,
+            conf.get(CONF_ACTION),
+            alias,
+            PLATFORM_AUTOMATION,
+            running_description="automation actions",
+            script_mode=conf.get(CONF_MODE, SCRIPT_MODE_RESTART),
+            max_runs=conf.get(CONF_MAX),
+            max_exceeded=conf.get(CONF_MAX_EXCEEDED),
+            logger=base.log,
+        ),
+        conf.get(CONF_INITIAL_STATE),
+        conf.get(CONF_VARIABLES),
+    )
+    entity.entity_id = entity_id
+    entity.editable = False
+
+    return entity

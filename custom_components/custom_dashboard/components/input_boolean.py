@@ -1,8 +1,6 @@
 """Input booleans used for settings."""
+from typing import List
 
-from homeassistant.helpers.entity_platform import EntityPlatform
-from typing import Dict, List, Type
-from homeassistant.core import HomeAssistant
 from homeassistant.components.input_boolean import (
     CONF_INITIAL,
     InputBoolean,
@@ -14,16 +12,17 @@ from homeassistant.const import (
     STATE_OFF,
 )
 from homeassistant.helpers.entity import Entity
+from homeassistant.helpers.entity_platform import EntityPlatform
 
 from ..const import (
     CONF_ENTITY_PLATFORM,
     BUILT_IN_AREA_VISIBLE,
     BUILT_IN_ENTITY_VISIBLE,
-    CONF_BUILT_IN_ENTITIES,
     DOMAIN,
     PLATFORM_INPUT_BOOLEAN,
     TITLE,
 )
+from ..share import get_base
 
 PLATFORM = PLATFORM_INPUT_BOOLEAN
 
@@ -41,17 +40,19 @@ class CustomInputBoolean(InputBoolean):
         pass
 
 
-async def setup_input_booleans(hass: HomeAssistant) -> None:
+async def setup_input_booleans() -> None:
     """Setup input booleans."""
 
-    await update_input_booleans(hass)
+    await update_input_booleans()
 
 
-async def update_input_booleans(hass: HomeAssistant) -> None:
+async def update_input_booleans() -> None:
     """Update built in input booleans."""
 
-    built_in: Dict(str, Type[Entity]) = hass.data[DOMAIN][CONF_BUILT_IN_ENTITIES]
-    platform: EntityPlatform = hass.data[CONF_ENTITY_PLATFORM][PLATFORM][0]
+    base = get_base()
+
+    built_in = base.built_in_entities
+    platform: EntityPlatform = base.hass.data[CONF_ENTITY_PLATFORM][PLATFORM][0]
     to_add: List[CustomInputBoolean] = []
 
     # Area icon setting
@@ -73,7 +74,9 @@ async def update_input_booleans(hass: HomeAssistant) -> None:
     await platform.async_add_entities(to_add)
 
 
-def create_input_boolean_entity(device_id: str, conf={}) -> CustomInputBoolean:
+def create_input_boolean_entity(device_id: str, conf: dict = {}) -> CustomInputBoolean:
+    """Create a CustomInputBoolean instance."""
+
     entity_id = f"{PLATFORM}.{device_id}"
     config = {
         CONF_ID: entity_id.split(".")[-1],

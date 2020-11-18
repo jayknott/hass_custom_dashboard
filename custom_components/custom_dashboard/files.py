@@ -1,8 +1,7 @@
 """File operations for this integration."""
+
 import shutil
 import os
-
-from homeassistant.core import HomeAssistant
 
 from .const import (
     LOVELACE_CARD_DIR,
@@ -10,11 +9,12 @@ from .const import (
     LOVELACE_DASHBOARD_URL_PATH,
     LOVELACE_DIR,
 )
+from .share import get_base
 
 
-async def setup_files(hass) -> None:
+async def setup_files() -> None:
     """Setup files for this integration."""
-    await update_files(hass)
+    await update_files()
 
 
 def mkdir(path: str, remove: bool = False) -> None:
@@ -26,12 +26,12 @@ def mkdir(path: str, remove: bool = False) -> None:
         os.makedirs(path)
 
 
-async def update_files(hass: HomeAssistant) -> None:
+async def update_files() -> None:
     """Copy files from the integration's source to HA config directory."""
     py_dir = os.path.dirname(__file__)
 
     # Copy custom Lovelace cards
-    local_dir = hass.config.path("www")
+    local_dir = get_base().hass.config.path("www")
     mkdir(local_dir)
     card_dir = os.path.join(local_dir, LOVELACE_DASHBOARD_URL_PATH)
     mkdir(card_dir, True)

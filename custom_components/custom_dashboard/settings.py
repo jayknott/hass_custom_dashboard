@@ -1,5 +1,5 @@
-import logging
-from typing import Optional
+"""Read and write area and entity settings in storage."""
+from typing import Any, List, Optional, Union
 import voluptuous as vol
 
 from homeassistant.const import (
@@ -9,12 +9,11 @@ from homeassistant.const import (
     CONF_ICON,
     CONF_TYPE,
 )
+from homeassistant.core import ServiceCall
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.storage import Store
 
 from .const import (
-    # BUILT_IN_ENTITIES,
-    BUILT_IN_ENTITY_IDS,
     CONF_AREA,
     CONF_AREA_NAME,
     CONF_AREAS,
@@ -31,8 +30,13 @@ from .const import (
     EVENT_SETTINGS_CHANGED,
     PLATFORM_BINARY_SENSOR,
 )
-
-_LOGGER = logging.getLogger(__name__)
+from .model import (
+    AreaSettings,
+    AreaSettingsRegistry,
+    EntitySettings,
+    EntitySettingsRegistry,
+)
+from .share import get_base
 
 PLATFORM = PLATFORM_BINARY_SENSOR
 
@@ -59,8 +63,10 @@ SCHEMA_UPDATE_ENTITY_SERVICE = vol.Schema(
 )
 
 
-async def save_setting(hass, setting_type, call):
-    updated = False
+async def save_setting(setting_type: str, call: ServiceCall) -> None:
+    """Wrapper for all save setting services."""
+
+    updated: bool = False
 
     # Have to do this because it comes from the template as a string
     if CONF_SORT_ORDER in call.data:
@@ -70,65 +76,72 @@ async def save_setting(hass, setting_type, call):
             raise vol.error.SchemaError("Expected an integer for sort_order.")
 
     if setting_type == CONF_AREA:
-        updated = await _update_area(hass, call) or updated
+        updated = await _update_area(call) or updated
 
     if setting_type == CONF_ENTITY:
-        updated = await _update_entity(hass, call) or updated
+        updated = await _update_entity(call) or updated
 
     if updated:
-        hass.bus.fire(EVENT_SETTINGS_CHANGED)
+        get_base().hass.bus.fire(EVENT_SETTINGS_CHANGED)
 
 
-async def _update_area(hass, call):
+async def _update_area(call: ServiceCall) -> bool:
+    """Update the settings for an area."""
+
+    hass = get_base().hass
     store = Store(hass, 1, f"{DOMAIN}.{CONF_AREAS}")
-    data = await store.async_load()
+    data: Optional[AreaSettingsRegistry] = await store.async_load()
+
     if data is None:
         data = {}
     data[CONF_UPDATED] = False
 
-    area_name = call.data.get(CONF_AREA_NAME)
-    area_id = await _get_area_id_by_name(hass, area_name)
+    area_name: str = call.data.get(CONF_AREA_NAME)
+    area_id = await _get_area_id_by_name(area_name)
 
-    await _update_key_value(hass, data, call, area_id, ATTR_NAME, area_name)
-    await _update_key_value(hass, data, call, area_id, CONF_ICON, DEFAULT_ROOM_ICON)
-    await _update_key_value(
-        hass, data, call, area_id, CONF_SORT_ORDER, DEFAULT_SORT_ORDER
-    )
+    await _update_key_value(data, call, area_id, ATTR_NAME, area_name)
+    await _update_key_value(data, call, area_id, CONF_ICON, DEFAULT_ROOM_ICON)
+    await _update_key_value(data, call, area_id, CONF_SORT_ORDER, DEFAULT_SORT_ORDER)
     await _update_key_value(hass, data, call, area_id, CONF_VISIBLE, True)
 
     return await _store_data(store, data, area_id)
 
 
-async def _update_entity(hass, call):
+async def _update_entity(call: ServiceCall) -> bool:
+    """Update the settings for an entity."""
+
+    hass = get_base().hass
     store = Store(hass, 1, f"{DOMAIN}.{CONF_ENTITIES}")
-    data = await store.async_load()
+    data: Optional[EntitySettingsRegistry] = await store.async_load()
     if data is None:
         data = {}
     data[CONF_UPDATED] = False
 
-    entity_id = call.data.get(CONF_ENTITY_ID)
-    entity = _get_entity_by_id(hass, entity_id)
+    entity_id: str = call.data.get(CONF_ENTITY_ID)
+    entity = _get_entity_by_id(entity_id)
 
     await _update_key_value(
-        hass, data, call, entity_id, CONF_AREA_NAME, entity[CONF_ORIGINAL_AREA_ID]
+        data, call, entity_id, CONF_AREA_NAME, entity[CONF_ORIGINAL_AREA_ID]
     )
+    await _update_key_value(data, call, entity_id, CONF_SORT_ORDER, DEFAULT_SORT_ORDER)
     await _update_key_value(
-        hass, data, call, entity_id, CONF_SORT_ORDER, DEFAULT_SORT_ORDER
+        data, call, entity_id, CONF_TYPE, [entity[CONF_ORIGINAL_TYPE], None]
     )
-    await _update_key_value(
-        hass, data, call, entity_id, CONF_TYPE, [entity[CONF_ORIGINAL_TYPE], None]
-    )
-    await _update_key_value(hass, data, call, entity_id, CONF_VISIBLE, True)
+    await _update_key_value(data, call, entity_id, CONF_VISIBLE, True)
 
     return await _store_data(store, data, entity_id)
 
 
-async def _get_area_id_by_name(hass, area_name):
-    area = None
+async def _get_area_id_by_name(area_name: Optional[str]) -> Optional[str]:
+    """Get an area's ID by its name."""
+
+    base = get_base()
+    area: Optional[AreaSettings] = None
+
     if area_name is not None and area_name != "":
-        areas = hass.data["area_registry"].async_list_areas()
         area = next(
-            (area_obj for area_obj in areas if area_obj.name == area_name), None
+            (area_obj for area_obj in base.areas if area_obj[ATTR_NAME] == area_name),
+            None,
         )
     else:
         return None
@@ -141,13 +154,17 @@ async def _get_area_id_by_name(hass, area_name):
     return area.id
 
 
-def _get_entity_by_id(hass, entity_id):
-    entity = None
+def _get_entity_by_id(entity_id: Optional[str]) -> Optional[EntitySettings]:
+    """Get an EntitySettings object by its name."""
+
+    base = get_base()
+    entity: Optional[EntitySettings] = None
+
     if entity_id is not None and entity_id != "":
         entity = next(
             (
                 entity_obj
-                for entity_obj in hass.data[DOMAIN][CONF_ENTITIES]
+                for entity_obj in base.entities
                 if entity_obj[CONF_ENTITY_ID] == entity_id
             ),
             None,
@@ -163,7 +180,9 @@ def _get_entity_by_id(hass, entity_id):
     return entity
 
 
-async def _store_data(store, data, object_key):
+async def _store_data(store: Store, data: dict, object_key: str) -> bool:
+    """Write data to a store."""
+
     if data[CONF_UPDATED]:
         del data[CONF_UPDATED]
         if len(data[object_key].keys()) == 0:
@@ -176,31 +195,39 @@ async def _store_data(store, data, object_key):
 
 
 async def _update_key_value(
-    hass, data, call, object_key, field_key, default_value=None, remove_if_default=True
-):
+    data: dict,
+    call: ServiceCall,
+    object_key: str,
+    field_key: str,
+    default_value: Optional[Union[List[Any], Any]] = None,
+    remove_if_default: bool = True,
+) -> None:
+    """Update a value in data based on object and filed keys."""
+
     if field_key not in call.data:
         return
 
     if object_key not in data:
         data[object_key] = {}
 
-    new_value = call.data.get(field_key)
+    new_value: Any = call.data.get(field_key)
     if new_value == "":
         new_value = None
 
     if field_key == CONF_AREA_NAME:
         field_key = ATTR_AREA_ID
-        area_id = await _get_area_id_by_name(hass, new_value)
+        area_id = await _get_area_id_by_name(new_value)
         new_value = area_id
 
-    old_value = data[object_key].get(field_key)
+    old_value: Any = data[object_key].get(field_key)
 
     # Convert integers from strings
     if field_key in [CONF_SORT_ORDER]:
         new_value = int(float(new_value))
 
-    field_key_persisted = field_key in data[object_key]
-    new_value_is_default = False
+    field_key_persisted: bool = field_key in data[object_key]
+    new_value_is_default: bool = False
+
     if isinstance(default_value, list):
         new_value_is_default = new_value in default_value
     else:

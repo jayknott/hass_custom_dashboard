@@ -1,11 +1,7 @@
 """Extend the functionality of the HA YAML parser."""
-from io import StringIO
-
-from homeassistant.core import HomeAssistant
 from collections import OrderedDict
 import io
-
-import logging
+from io import StringIO
 import os
 import time
 from typing import (
@@ -28,8 +24,7 @@ from ..const import (
     JINJA_VARIABLE_TRANSLATE,
     JINJA_VARIABLE_USER_ID,
 )
-
-_LOGGER = logging.getLogger(__name__)
+from ..share import get_base
 
 TranslationDict = Dict[str, Union[str, Dict[str, str]]]
 
@@ -50,8 +45,11 @@ class CustomLoader(hass_loader.SafeLineLoader):
         self._translations = translations
 
 
-async def setup_yaml_parser(hass: HomeAssistant) -> None:
+async def setup_yaml_parser() -> None:
     """Setup the YAML parser."""
+
+    base = get_base()
+    hass = base.hass
 
     def load_translations(
         language: Optional[str] = None,
@@ -86,7 +84,7 @@ async def setup_yaml_parser(hass: HomeAssistant) -> None:
                     )
                 )
             except:
-                _LOGGER.warning(f"Translation doesn't exist for language '{language}'")
+                base.log.warning(f"Translation doesn't exist for language '{language}'")
 
         return translations
 
@@ -130,7 +128,7 @@ async def setup_yaml_parser(hass: HomeAssistant) -> None:
             stream.name = fname
             return load(stream, None, user_id, translations) or OrderedDict()
         except hass_loader.yaml.YAMLError as exc:
-            _LOGGER.error(f"{str(exc)}: {template}")
+            base.log.error(f"{str(exc)}: {template}")
             raise HomeAssistantError(exc) from exc
 
     def process_node(
@@ -160,7 +158,7 @@ async def setup_yaml_parser(hass: HomeAssistant) -> None:
                 node,
             )
         except FileNotFoundError as exc:
-            _LOGGER.error("Unable to include file %s: %s", node_values[0], exc)
+            base.log.error("Unable to include file %s: %s", node_values[0], exc)
             raise HomeAssistantError(exc)
 
     def _include_dir_list_yaml(

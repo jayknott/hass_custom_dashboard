@@ -1,5 +1,4 @@
 """Adds config flow for Custom Dashboard."""
-import logging
 from typing import Any, Dict, Optional
 
 from homeassistant import config_entries
@@ -8,8 +7,6 @@ from homeassistant.core import callback
 from homeassistant.helpers.typing import ConfigType
 
 from .const import DOMAIN
-
-_LOGGER = logging.getLogger(__name__)
 
 
 class CustomDashboardFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):

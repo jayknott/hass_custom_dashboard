@@ -1,4 +1,5 @@
-import logging
+"""Input texts used for settings."""
+from typing import List
 
 from homeassistant.components.input_text import (
     CONF_INITIAL,
@@ -17,46 +18,47 @@ from homeassistant.const import (
     CONF_NAME,
 )
 from homeassistant.helpers.entity import Entity
+from homeassistant.helpers.entity_platform import EntityPlatform
 
 from ..const import (
     CONF_ENTITY_PLATFORM,
     BUILT_IN_AREA_ICON,
     BUILT_IN_AREA_NAME,
-    CONF_BUILT_IN_ENTITIES,
     DOMAIN,
     PLATFORM_INPUT_TEXT,
     TITLE,
 )
-
-_LOGGER = logging.getLogger(__name__)
+from ..share import get_base
 
 PLATFORM = PLATFORM_INPUT_TEXT
 
 
-def create_input_text_entity(device_id, conf={}):
-    entity_id = f"{PLATFORM}.{device_id}"
-    config = {
-        CONF_ID: entity_id.split(".")[-1],
-        CONF_NAME: entity_id.split(".")[-1],
-        CONF_MIN: CONF_MIN_VALUE,
-        CONF_MAX: CONF_MAX_VALUE,
-        CONF_PATTERN: None,
-        CONF_ICON: "mdi:form-textbox",
-        CONF_MODE: MODE_TEXT,
-        CONF_INITIAL: "",
-    }
-    config.update(conf)
+class CustomInputText(InputText):
+    """Input text that removes stored states."""
 
-    entity = CustomInputText.from_yaml(config)
+    async def async_internal_added_to_hass(self):
+        await Entity.async_internal_added_to_hass(self)
 
-    return entity
+    async def async_internal_will_remove_from_hass(self):
+        await Entity.async_internal_will_remove_from_hass(self)
+
+    async def async_get_last_state(self):
+        pass
 
 
-async def update_built_in_input_text(hass):
-    data = hass.data[DOMAIN]
-    built_in = data[CONF_BUILT_IN_ENTITIES]
-    platform = hass.data[CONF_ENTITY_PLATFORM][PLATFORM][0]
-    to_add = []
+async def setup_input_texts() -> None:
+    """Setup input texts."""
+
+    await update_input_texts()
+
+
+async def update_input_texts() -> None:
+    """Update built in input texts."""
+
+    base = get_base()
+    built_in = base.built_in_entities
+    platform: EntityPlatform = base.hass.data[CONF_ENTITY_PLATFORM][PLATFORM][0]
+    to_add: List[CustomInputText] = []
 
     # Area icon setting
     if built_in.get(BUILT_IN_AREA_ICON) is None:
@@ -77,12 +79,22 @@ async def update_built_in_input_text(hass):
     await platform.async_add_entities(to_add)
 
 
-class CustomInputText(InputText):
-    async def async_internal_added_to_hass(self):
-        await Entity.async_internal_added_to_hass(self)
+def create_input_text_entity(device_id: str, conf: dict = {}) -> CustomInputText:
+    """Create a CustomInputText instance."""
 
-    async def async_internal_will_remove_from_hass(self):
-        await Entity.async_internal_will_remove_from_hass(self)
+    entity_id = f"{PLATFORM}.{device_id}"
+    config = {
+        CONF_ID: entity_id.split(".")[-1],
+        CONF_NAME: entity_id.split(".")[-1],
+        CONF_MIN: CONF_MIN_VALUE,
+        CONF_MAX: CONF_MAX_VALUE,
+        CONF_PATTERN: None,
+        CONF_ICON: "mdi:form-textbox",
+        CONF_MODE: MODE_TEXT,
+        CONF_INITIAL: "",
+    }
+    config.update(conf)
 
-    async def async_get_last_state(self):
-        pass
+    entity = CustomInputText.from_yaml(config)
+
+    return entity

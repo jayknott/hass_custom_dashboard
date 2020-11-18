@@ -1,7 +1,6 @@
 """Add counters for entities"""
-import logging
 import re
-from typing import Dict, List, Optional, TypedDict, Union
+from typing import List, Optional, TypedDict, Union
 
 from homeassistant.components.template.binary_sensor import CONF_ATTRIBUTE_TEMPLATES
 from homeassistant.const import (
@@ -15,15 +14,13 @@ from homeassistant.const import (
     STATE_OFF,
     STATE_ON,
 )
-from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import EntityPlatform
 from homeassistant.helpers.template import Template
 
 from .binary_sensor import create_binary_sensor_entity
-from .registry import AreaSettings, EntitySettings, hass_areas
+from .registry import AreaSettings
 from ..const import (
     CONF_COUNT,
-    CONF_COUNTERS,
     CONF_ENTITIES,
     CONF_ENTITY_PLATFORM,
     CONF_SECURITY,
@@ -39,9 +36,9 @@ from ..const import (
     TRACKED_ENTITY_TYPE_ON_STATES,
     TRACKED_ENTITY_TYPES,
 )
+from ..share import get_base
 
 PLATFORM = PLATFORM_BINARY_SENSOR
-_LOGGER = logging.getLogger(__name__)
 
 
 class CounterTemplates(TypedDict):
@@ -51,55 +48,52 @@ class CounterTemplates(TypedDict):
     tracked_count_template: str
 
 
-async def setup_counters(hass: HomeAssistant) -> None:
+async def setup_counters() -> None:
     """Setup counters."""
 
-    await update_counters(hass)
+    await update_counters()
 
 
-async def update_counters(hass: HomeAssistant) -> None:
+async def update_counters() -> None:
     """Update all counters. Only creates counters when entities exist that match the counter."""
 
-    hass.data[DOMAIN][CONF_COUNTERS] = []
-
-    areas = await hass_areas(hass)
+    base = get_base()
+    base.counters = []
+    areas = base.areas
 
     # Create counters for all tracked types and something on types in every area
     for entity_type in TRACKED_ENTITY_TYPES + SOMETHING_ON_ENTITY_TYPES:
         states = [STATE_ON] + TRACKED_ENTITY_TYPE_ON_STATES.get(entity_type, [])
         for area in areas:
-            await create_counter(hass, entity_type, states, None, area)
+            await create_counter(entity_type, states, None, area)
 
     # Create a security counter in each security type in every area
     for entity_type in SECURITY_ENTITY_TYPES:
         states = [STATE_OFF] + SECURITY_ENTITY_TYPE_OFF_STATES.get(entity_type, [])
         for area in areas:
-            await create_counter(hass, entity_type, states, CONF_SECURITY, area, True)
+            await create_counter(entity_type, states, CONF_SECURITY, area, True)
 
     # Create super counters in each area for all security type and all something on types.
     for area in areas:
         await create_super_counter(
-            hass, CONF_SECURITY, SECURITY_ENTITY_TYPES, CONF_SECURITY, area
+            CONF_SECURITY, SECURITY_ENTITY_TYPES, CONF_SECURITY, area
         )
         await create_super_counter(
-            hass, CONF_SOMETHING_ON, SOMETHING_ON_ENTITY_TYPES, None, area
+            CONF_SOMETHING_ON, SOMETHING_ON_ENTITY_TYPES, None, area
         )
 
     # Create super counters for each tracked type
     for entity_type in TRACKED_ENTITY_TYPES:
-        await create_super_counter(hass, entity_type, [entity_type])
+        await create_super_counter(entity_type, [entity_type])
 
     # Create super counter for something on types
-    await create_super_counter(hass, CONF_SOMETHING_ON, SOMETHING_ON_ENTITY_TYPES)
+    await create_super_counter(CONF_SOMETHING_ON, SOMETHING_ON_ENTITY_TYPES)
 
     # Create super counter for security types
-    await create_super_counter(
-        hass, CONF_SECURITY, SECURITY_ENTITY_TYPES, CONF_SECURITY
-    )
+    await create_super_counter(CONF_SECURITY, SECURITY_ENTITY_TYPES, CONF_SECURITY)
 
 
 async def create_counter(
-    hass: HomeAssistant,
     entity_type: str,
     states: List[str],
     category: Optional[str] = None,
@@ -111,7 +105,6 @@ async def create_counter(
     prefix = _prefix_from_category(category)
     full_entity_type = f"{prefix}{entity_type}"
     counter = await _create_counter(
-        hass,
         full_entity_type,
         [full_entity_type],
         states=states,
@@ -121,11 +114,10 @@ async def create_counter(
     )
 
     if counter is not None:
-        hass.data[DOMAIN][CONF_COUNTERS].append(counter)
+        get_base().counters.append(counter)
 
 
 async def create_super_counter(
-    hass: HomeAssistant,
     name: str,
     entity_types: List[str],
     category: Optional[str] = None,
@@ -134,11 +126,13 @@ async def create_super_counter(
     """Create a counter based on other counters."""
 
     prefix = _prefix_from_category(category)
-    await _create_counter(hass, name, entity_types, prefix=prefix, area=area, sum=True)
+    await _create_counter(name, entity_types, prefix=prefix, area=area, sum=True)
 
 
-async def remove_counter(hass: HomeAssistant, entity_id: str) -> None:
+async def remove_counter(entity_id: str) -> None:
     """Remove a counter from HA if it exists."""
+
+    hass = get_base().hass
 
     platform: EntityPlatform = hass.data[CONF_ENTITY_PLATFORM][PLATFORM][0]
     sensor = hass.states.get(entity_id)
@@ -149,11 +143,11 @@ async def remove_counter(hass: HomeAssistant, entity_id: str) -> None:
 
 
 def _counter_entities(
-    hass: HomeAssistant, entity_type: str, area: Optional[AreaSettings] = None
+    entity_type: str, area: Optional[AreaSettings] = None
 ) -> List[str]:
     """Enumerate the entities the counter will check for updates on."""
 
-    entities: List[EntitySettings] = hass.data[DOMAIN][CONF_ENTITIES]
+    entities = get_base().entities
     return [
         entity[CONF_ENTITY_ID]
         for entity in entities
@@ -170,7 +164,6 @@ def _counter_entities(
 
 
 def _counter_templates(
-    hass: HomeAssistant,
     entity_type: str,
     states: List[str],
     area: Optional[AreaSettings] = None,
@@ -178,7 +171,7 @@ def _counter_templates(
 ) -> Optional[CounterTemplates]:
     """Create the templates for the counter entity"""
 
-    entity_ids = _counter_entities(hass, entity_type, area)
+    entity_ids = _counter_entities(entity_type, area)
 
     if len(entity_ids) == 0:
         return None
@@ -204,64 +197,10 @@ def _counter_templates(
     }
 
 
-# async def create_counter(
-#     hass: HomeAssistant,
-#     entity_type: str,
-#     states: List[str],
-#     prefix: Optional[str] = None,
-#     area: Optional[AreaSettings] = None,
-#     reject: bool = False,
-# ) -> Optional[str]:
-#     """Create a counter for a single entity type."""
-
-#     platform: EntityPlatform = hass.data[CONF_ENTITY_PLATFORM][PLATFORM][0]
-
-#     # Generate names
-#     area_string = f"area_{area[ATTR_ID]}_" if area is not None else ""
-#     area_title = f"Area {area[ATTR_ID][-5:-1]} " if area is not None else ""
-
-#     prefix_title = f"{prefix.replace('_', ' ').title()} " if prefix is not None else ""
-#     entity_type_title = entity_type.replace("_", " ").title()
-#     full_entity_type = f"{prefix_string}{entity_type}"
-
-#     device_id = f"{DOMAIN}_{area_string}{full_entity_type}"
-#     entity_id = f"{PLATFORM}.{device_id}"
-#     friendly_name = f"{TITLE} {area_title}{prefix_title}{entity_type_title}"
-
-#     await remove_counter(hass, entity_id)
-#     templates = counter_templates(hass, full_entity_type, states, area, reject)
-
-#     if templates is None:
-#         return None
-
-#     await platform.async_add_entities(
-#         [
-#             await create_binary_sensor_entity(
-#                 hass,
-#                 device_id,
-#                 {
-#                     CONF_FRIENDLY_NAME: friendly_name,
-#                     CONF_ICON_TEMPLATE: Template("mdi:counter"),
-#                     CONF_VALUE_TEMPLATE: Template(templates["state_template"]),
-#                     CONF_ATTRIBUTE_TEMPLATES: {
-#                         CONF_COUNT: Template(templates["count_template"]),
-#                         CONF_ENTITIES: Template(templates["entities_template"]),
-#                         CONF_TRACKED_ENTITY_COUNT: Template(
-#                             templates["tracked_count_template"]
-#                         ),
-#                     },
-#                 },
-#             )
-#         ]
-#     )
-
-#     return entity_id
-
-
-def _super_counter_entities(hass: HomeAssistant, regex: str) -> List[str]:
+def _super_counter_entities(regex: str) -> List[str]:
     """Enumerate the counters that this super counter will check for updates on."""
 
-    entity_ids: List[str] = hass.data[DOMAIN][CONF_COUNTERS]
+    entity_ids: List[str] = get_base().counters
 
     return [
         entity_id for entity_id in entity_ids if re.search(regex, entity_id) is not None
@@ -269,7 +208,6 @@ def _super_counter_entities(hass: HomeAssistant, regex: str) -> List[str]:
 
 
 def _super_counter_templates(
-    hass: HomeAssistant,
     entity_types: List[str],
     area: Optional[AreaSettings] = None,
     prefix: Optional[str] = None,
@@ -279,7 +217,7 @@ def _super_counter_templates(
     area_regex = f"area_{area[ATTR_ID]}_" if area is not None else "area_[a-z\\d]+_"
     regex = f"binary_sensor\\.{DOMAIN}_{area_regex}{prefix}({'|'.join(entity_types)})"
 
-    entity_ids = _super_counter_entities(hass, regex)
+    entity_ids = _super_counter_entities(regex)
 
     if len(entity_ids) == 0:
         return None
@@ -305,59 +243,6 @@ def _super_counter_templates(
     }
 
 
-# async def create_super_counter(
-#     hass: HomeAssistant,
-#     entity_types: List[str],
-#     name: str,
-#     prefix: Optional[str] = None,
-#     area: Optional[AreaSettings] = None,
-# ) -> None:
-#     """Create a counter based on other counters."""
-
-#     platform: EntityPlatform = hass.data[CONF_ENTITY_PLATFORM][PLATFORM][0]
-
-#     # Generate names
-#     area_string = f"area_{area[ATTR_ID]}_" if area is not None else ""
-#     area_title = f"Area {area[ATTR_ID][-5:-1]} " if area is not None else ""
-#     prefix_string = f"{prefix}_" if prefix is not None else ""
-#     name_title = name.replace("_", " ").title()
-
-#     device_id = f"{DOMAIN}_{area_string}{name}"
-#     entity_id = f"{PLATFORM}.{device_id}"
-#     friendly_name = f"{TITLE} {area_title}{name_title}"
-
-#     await remove_counter(hass, entity_id)
-
-#     area_regex = f"area_{area[ATTR_ID]}_" if area is not None else "area_[a-z\\d]+_"
-#     regex = f"binary_sensor\\.{DOMAIN}_{area_regex}{prefix_string}({'|'.join(entity_types)})"
-
-#     templates = super_counter_templates(hass, regex)
-
-#     if templates is None:
-#         return
-
-#     await platform.async_add_entities(
-#         [
-#             await create_binary_sensor_entity(
-#                 hass,
-#                 device_id,
-#                 {
-#                     CONF_FRIENDLY_NAME: friendly_name,
-#                     CONF_ICON_TEMPLATE: Template("mdi:counter"),
-#                     CONF_VALUE_TEMPLATE: Template(templates["state_template"]),
-#                     CONF_ATTRIBUTE_TEMPLATES: {
-#                         CONF_COUNT: Template(templates["count_template"]),
-#                         CONF_ENTITIES: Template(templates["entities_template"]),
-#                         CONF_TRACKED_ENTITY_COUNT: Template(
-#                             templates["tracked_count_template"]
-#                         ),
-#                     },
-#                 },
-#             )
-#         ]
-#     )
-
-
 def _prefix_from_category(category: Optional[str] = None) -> str:
     """Get the prefix for a category. Used in _create_counter."""
 
@@ -365,7 +250,6 @@ def _prefix_from_category(category: Optional[str] = None) -> str:
 
 
 async def _create_counter(
-    hass: HomeAssistant,
     name: str,
     entity_types: Union[str, List[str]],
     states: Optional[List[str]] = None,
@@ -374,7 +258,9 @@ async def _create_counter(
     reject: bool = False,
     sum: bool = False,
 ) -> Optional[str]:
-    platform: EntityPlatform = hass.data[CONF_ENTITY_PLATFORM][PLATFORM][0]
+    """Create a counter or super counter if sum is true."""
+
+    platform: EntityPlatform = get_base().hass.data[CONF_ENTITY_PLATFORM][PLATFORM][0]
 
     area_string = f"area_{area[ATTR_ID]}_" if area is not None else ""
     area_title = f"Area {area[ATTR_ID][-5:-1]} " if area is not None else ""
@@ -383,13 +269,13 @@ async def _create_counter(
     entity_id = f"{PLATFORM}.{device_id}"
     friendly_name = f"{TITLE} {area_title}{name.replace('_', ' ').title()}"
 
-    await remove_counter(hass, entity_id)
+    await remove_counter(entity_id)
 
     templates: CounterTemplates
     if sum:
-        templates = _super_counter_templates(hass, entity_types, area, prefix)
+        templates = _super_counter_templates(entity_types, area, prefix)
     else:
-        templates = _counter_templates(hass, entity_types[0], states, area, reject)
+        templates = _counter_templates(entity_types[0], states, area, reject)
 
     if templates is None:
         return None
@@ -397,7 +283,6 @@ async def _create_counter(
     await platform.async_add_entities(
         [
             await create_binary_sensor_entity(
-                hass,
                 device_id,
                 {
                     CONF_FRIENDLY_NAME: friendly_name,

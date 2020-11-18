@@ -4,7 +4,6 @@ Generates template variables, counters, automations, settings, etc. required for
 For more details about this integration, please refer to the documentation at
 https://github.com/jayknott/custom_dashboard
 """
-import logging
 import voluptuous as vol
 
 from homeassistant.core import HomeAssistant
@@ -17,8 +16,6 @@ from .setup import (
 )
 
 CONFIG_SCHEMA = vol.Schema({DOMAIN: {}}, extra=vol.ALLOW_EXTRA)
-
-_LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:

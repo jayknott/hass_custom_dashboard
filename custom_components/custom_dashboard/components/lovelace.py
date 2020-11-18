@@ -1,9 +1,11 @@
-import logging
+"""Extend Lovelace to support this integration."""
 import os
+from typing import Type
 
 from custom_components.hacs.api.hacs_repository import hacs_repository
 from custom_components.hacs.api.hacs_repository_data import hacs_repository_data
 from custom_components.hacs.share import get_hacs
+
 from homeassistant.components.frontend import (
     async_register_built_in_panel,
     async_remove_panel,
@@ -27,11 +29,10 @@ from homeassistant.const import (
     CONF_FILENAME,
     CONF_URL,
 )
+from homeassistant.helpers.collection import StorageCollection
+from homeassistant.helpers.typing import ConfigType
 
-# from .binary_sensor import update_built_in_binary_sensors
 from ..const import (
-    CONF_MISSING_RESOURCES,
-    DOMAIN,
     HACS_CUSTOM_REPOSITORIES,
     HACS_INTEGRATIONS,
     HACS_PLUGINS,
@@ -43,11 +44,30 @@ from ..const import (
     LOVELACE_RESOURCE_TYPE_MODULE,
     TITLE,
 )
+from ..share import get_base
 
-_LOGGER = logging.getLogger(__name__)
+
+async def setup_lovelace() -> None:
+    """Setup Lovelace"""
+
+    # await update_hacs()
+    await update_resources()
+    await update_dashboards()
 
 
-async def update_hacs(hass, hacs):
+def lovelace_mode(config: ConfigType = {}) -> str:
+    """Get the Lovelace mode from the configuration file."""
+
+    return config.get(CONF_MODE, MODE_STORAGE)
+
+
+async def update_hacs() -> None:
+    """Install or update hacs integrations and frontend plugins."""
+
+    base = get_base()
+    hass = base.hass
+    hacs = get_hacs()
+
     # Add custom repositories to HACS
     for repo in HACS_CUSTOM_REPOSITORIES:
         hacs_repository_data(
@@ -63,53 +83,60 @@ async def update_hacs(hass, hacs):
                     hass, None, {"repository": repo.data.id, "action": "install"}
                 )
             except:
-                _LOGGER.error("Unable to install HACS repository: %s", hacs_plugin)
+                base.log.error("Unable to install HACS repository: %s", hacs_plugin)
         except:
-            _LOGGER.warning(
+            base.log.warning(
                 f"Could not connect to HACS install '{hacs_plugin}', will assume everything is okay."
             )
 
 
-async def add_resource_module(hass, mode, resources, url):
+async def add_resource_module(url: str) -> None:
+    """Add a resource to the Lovelace resources list if it doesn't exist."""
+
+    base = get_base()
+    resources: Type[StorageCollection] = base.hass.data[LOVELACE_DOMAIN][CONF_RESOURCES]
+
     for resource in resources.async_items():
         if resource[CONF_URL] == url:
             # Item is already in the list
             return
 
-    if mode == MODE_STORAGE:
+    if base.configuration.lovelace_mode == MODE_STORAGE:
         await resources.async_create_item(
             {CONF_URL: url, CONF_RESOURCE_TYPE_WS: LOVELACE_RESOURCE_TYPE_MODULE}
         )
     else:
-        _LOGGER.error(
+        base.log.error(
             f"{url} is not in the lovelace:resources list in the configuration.yaml"
         )
-        hass.data[DOMAIN][CONF_MISSING_RESOURCES].append(url)
+        base.configuration.missing_resources.append(url)
 
 
-async def update_resources(hass, hacs, config):
-    mode = config.get(CONF_MODE, MODE_STORAGE)
-    resources = hass.data[LOVELACE_DOMAIN][CONF_RESOURCES]
+async def update_resources() -> None:
+    """Check Lovelace resources and and resources that are missing if in storage mode."""
+
+    base = get_base()
+    hacs = get_hacs()
 
     # Reset missing resources
-    hass.data[DOMAIN][CONF_MISSING_RESOURCES] = []
+    missing_resources = base.configuration.missing_resources = []
 
     # Add the HACS plugins to the list
     for hacs_plugin in HACS_PLUGINS:
         try:
             repo = hacs.get_by_name(hacs_plugin)
+            url = f"/hacsfiles/{hacs_plugin.split('/')[-1]}/{repo.data.file_name}"
 
             try:
-                url = f"/hacsfiles/{hacs_plugin.split('/')[-1]}/{repo.data.file_name}"
-                await add_resource_module(hass, mode, resources, url)
+                await add_resource_module(url)
             except:
-                _LOGGER.error(
+                base.log.error(
                     f"Unable to add {hacs_plugin} the the Lovelace resource list.",
                     hacs_plugin,
                 )
-                hass.data[DOMAIN][CONF_MISSING_RESOURCES].append(url)
+                missing_resources.append(url)
         except:
-            _LOGGER.warning(
+            base.log.warning(
                 f"Could not connect to HACS to check repository for '{hacs_plugin}', will assume everything is okay."
             )
 
@@ -118,10 +145,14 @@ async def update_resources(hass, hacs, config):
         url = (
             f"/local/{LOVELACE_DASHBOARD_URL_PATH}/{card['dirname']}/{card['filename']}"
         )
-        await add_resource_module(hass, mode, resources, url)
+        await add_resource_module(url)
 
 
-async def update_dashboards(hass):
+async def update_dashboards() -> None:
+    """Add this integrations Lovelace dashboard."""
+
+    hass = get_base().hass
+
     config = {
         CONF_MODE: MODE_YAML,
         CONF_TITLE: TITLE,
@@ -159,12 +190,3 @@ async def update_dashboards(hass):
 
     # Refresh lovelace using browser_mod
     hass.async_create_task(hass.services.async_call("browser_mod", "lovelace_reload"))
-
-
-async def update_lovelace(hass, config):
-    ll_config = config.get(LOVELACE_DOMAIN, {})
-    hacs = get_hacs()
-
-    # await update_hacs(hass, hacs)
-    await update_resources(hass, hacs, ll_config)
-    await update_dashboards(hass)

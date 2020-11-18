@@ -1,6 +1,6 @@
 """Setup and manage area and entity registries."""
 import re
-from typing import Callable, Dict, Iterable, List, Optional, TypedDict
+from typing import Callable, Dict, Iterable, List, Optional
 
 from homeassistant.const import (
     ATTR_AREA_ID,
@@ -12,7 +12,6 @@ from homeassistant.const import (
     CONF_NAME,
     CONF_TYPE,
 )
-from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_registry import RegistryEntry
 from homeassistant.helpers.device_registry import DeviceEntry
 from homeassistant.helpers.area_registry import AreaEntry, AreaRegistry
@@ -35,70 +34,48 @@ from ..const import (
     PLATFORM_MAP,
     SENSOR_CLASS_MAP,
 )
+from ..model import (
+    AreaSettings,
+    AreaSettingsRegistry,
+    EntitySettings,
+    EntitySettingsRegistry,
+)
+from ..share import get_base
 
 PLATFORM = PLATFORM_BINARY_SENSOR
 
 
-class AreaSettingsEntry(TypedDict):
-    name: str
-    icon: str
-    original_name: str
-    sort_order: int
-    visible: bool
-
-
-class AreaSettings(AreaSettingsEntry):
-    id: str
-
-
-AreaSettingsRegistry = Dict[str, AreaSettingsEntry]
-
-
-class EntitySettingsEntry(TypedDict):
-    area_id: str
-    original_area_id: str
-    name: str
-    type: str
-    original_type: str
-    sort_order: int
-    visible: bool
-
-
-class EntitySettings(EntitySettingsEntry):
-    entity_id: str
-
-
-EntitySettingsRegistry = Dict[str, EntitySettingsEntry]
-
-
-async def setup_registries(hass: HomeAssistant) -> None:
+async def setup_registries() -> None:
     """Initialize the area and entity domain data entries."""
 
-    hass.data[DOMAIN][CONF_AREAS] = []
-    hass.data[DOMAIN][CONF_ENTITIES] = []
+    base = get_base()
+    base.areas = []
+    base.entities = []
 
 
-async def update_registries(hass: HomeAssistant) -> None:
+async def update_registries() -> None:
     """Update the area and entity domain data entries with new registry data."""
 
-    await update_area_registry(hass)
-    await update_entity_registry(hass)
+    await update_area_registry()
+    await update_entity_registry()
 
 
-async def update_area_registry(hass: HomeAssistant) -> None:
+async def update_area_registry() -> None:
     """Update the area domain data entry with new registry data."""
 
-    hass.data[DOMAIN][CONF_AREAS] = await hass_areas(hass)
+    get_base().areas = await hass_areas()
 
 
-async def update_entity_registry(hass: HomeAssistant) -> None:
+async def update_entity_registry() -> None:
     """Update the entity domain data entry with new registry data."""
 
-    hass.data[DOMAIN][CONF_ENTITIES] = await hass_entities(hass)
+    get_base().entities = await hass_entities()
 
 
-async def hass_areas(hass: HomeAssistant) -> List[AreaSettings]:
+async def hass_areas() -> List[AreaSettings]:
     """A dictionary list for the HA area registry used for this integrations domain data."""
+
+    hass = get_base().hass
 
     areas: List[AreaSettings] = []  # make as an array so it can be sorted
 
@@ -128,10 +105,10 @@ async def hass_areas(hass: HomeAssistant) -> List[AreaSettings]:
     return areas
 
 
-def original_entity_type(hass: HomeAssistant, entity_id: str) -> str:
+def original_entity_type(entity_id: str) -> str:
     """Entity type from defined maps in const.py or the entity domain."""
 
-    entity = hass.states.get(entity_id)
+    entity = get_base().hass.states.get(entity_id)
     domain = entity.domain if entity is not None else entity_id.split(".")[0]
 
     def binary_sensors() -> str:
@@ -188,8 +165,10 @@ def match_area_with_entity_id(
     return None
 
 
-async def hass_entities(hass: HomeAssistant) -> List[EntitySettings]:
+async def hass_entities() -> List[EntitySettings]:
     """A dictionary list for the HA entity registry used for this integrations domain data."""
+
+    hass = get_base().hass
 
     entities: List[EntitySettings] = []  # make as an array so it can be sorted
     entities_processed: List[
@@ -224,7 +203,7 @@ async def hass_entities(hass: HomeAssistant) -> List[EntitySettings]:
                 entity_data = data.get(entity.entity_id, {})
                 entity_state = hass.states.get(entity.entity_id)
                 entity_name = entity_state.name if entity_state is not None else None
-                entity_type = original_entity_type(hass, entity.entity_id)
+                entity_type = original_entity_type(entity.entity_id)
                 if entity_name is None:
                     entity_name = (
                         entity.name
@@ -253,7 +232,7 @@ async def hass_entities(hass: HomeAssistant) -> List[EntitySettings]:
 
         entity_data = data.get(entity_id, {})
         hass_state = hass.states.get(entity_id)
-        entity_type = original_entity_type(hass, entity_id)
+        entity_type = original_entity_type(entity_id)
         area_id = entity_data.get(
             ATTR_AREA_ID, match_area_with_entity_id(entity_id, areas)
         )

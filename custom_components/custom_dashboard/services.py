@@ -1,5 +1,5 @@
-"""Setup Custom Dashboard Services"""
-from homeassistant.core import HomeAssistant, ServiceCall
+"""Services available for this integration."""
+from homeassistant.core import ServiceCall
 
 from .settings import (
     save_setting,
@@ -13,14 +13,19 @@ from .const import (
     SERVICE_SET_AREA,
     SERVICE_SET_ENTITY,
 )
+from .share import get_base
 
 
-async def setup_services(hass: HomeAssistant) -> None:
+async def setup_services() -> None:
+    """Setup services."""
+
+    hass = get_base().hass
+
     async def service_save_area_setting(call: ServiceCall) -> None:
-        await save_setting(hass, CONF_AREA, call)
+        await save_setting(CONF_AREA, call)
 
     async def service_save_entity_setting(call: ServiceCall) -> None:
-        await save_setting(hass, CONF_ENTITY, call)
+        await save_setting(CONF_ENTITY, call)
 
     # Set area settings service
     hass.services.async_register(

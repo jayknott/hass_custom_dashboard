@@ -119,7 +119,6 @@ TRACKED_ENTITY_TYPE_ON_STATES = {
 # Group tracked entities together to track if something is on globally
 # or in an area. This is useful if the dashboard tracks lights
 # and all other entities seperately.
-# This must be a subset of TRACKED_ENTITY_TYPES, but can be an empty array.
 SOMETHING_ON_ENTITY_TYPES = [
     "media_player",
     "remote",
