@@ -54,6 +54,9 @@ cards:
                     - ../components/caption_text.yaml
                     - content: {{ _custom_dashboard_trans.light.all_off }}
         {% endif %}
+        - !include
+          - ../components/section_header.yaml
+          - title: {{ _custom_dashboard_trans.light.all }}
         {% if all_lights and all_lights | length > 0 %}
         - type: custom:custom-dashboard-flexbox-card
           cards:
