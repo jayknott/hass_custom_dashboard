@@ -81,6 +81,12 @@ room:
 save:
   one: Save
   other: Saves
+security:
+  one: Security
+  other: Security
+sensor:
+  one: Sensor
+  other: Sensors
 setting:
   one: Setting
   other: Settings

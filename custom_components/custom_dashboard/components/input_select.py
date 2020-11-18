@@ -84,13 +84,12 @@ async def update_input_selects() -> None:
 
     # Entity type select
     if built_in.get(BUILT_IN_ENTITY_TYPE_SELECT) is None:
-        options = (
-            ENTITY_TYPES
-            + [
-                f"{CONF_SECURITY}_{security_entity_type}"
-                for security_entity_type in SECURITY_ENTITY_TYPES
-            ]
-        ).sort()
+        options = ENTITY_TYPES + [
+            f"{CONF_SECURITY}_{security_entity_type}"
+            for security_entity_type in SECURITY_ENTITY_TYPES
+        ]
+        options.sort()
+
         built_in[BUILT_IN_ENTITY_TYPE_SELECT] = create_input_select_entity(
             f"{DOMAIN}_{BUILT_IN_ENTITY_TYPE_SELECT}",
             {
