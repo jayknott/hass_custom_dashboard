@@ -14,16 +14,14 @@ from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.entity_platform import EntityPlatform
 
 from ..const import (
+    ALL_ENTITY_TYPES,
     CONF_ENTITY_PLATFORM,
     BUILT_IN_AREA_SELECT,
     BUILT_IN_ENTITY_AREA_SELECT,
     BUILT_IN_ENTITY_ID_SELECT,
     BUILT_IN_ENTITY_TYPE_SELECT,
-    CONF_SECURITY,
     DOMAIN,
-    ENTITY_TYPES,
     PLATFORM_INPUT_SELECT,
-    SECURITY_ENTITY_TYPES,
     TITLE,
 )
 from ..share import get_base
@@ -84,10 +82,7 @@ async def update_input_selects() -> None:
 
     # Entity type select
     if built_in.get(BUILT_IN_ENTITY_TYPE_SELECT) is None:
-        options = ENTITY_TYPES + [
-            f"{CONF_SECURITY}_{security_entity_type}"
-            for security_entity_type in SECURITY_ENTITY_TYPES
-        ]
+        options = ALL_ENTITY_TYPES
         options.sort()
 
         built_in[BUILT_IN_ENTITY_TYPE_SELECT] = create_input_select_entity(

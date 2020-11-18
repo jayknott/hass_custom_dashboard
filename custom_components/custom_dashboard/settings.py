@@ -14,6 +14,7 @@ import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.storage import Store
 
 from .const import (
+    ALL_ENTITY_TYPES,
     CONF_AREA,
     CONF_AREA_NAME,
     CONF_AREAS,
@@ -26,7 +27,6 @@ from .const import (
     DEFAULT_ROOM_ICON,
     DEFAULT_SORT_ORDER,
     DOMAIN,
-    ENTITY_TYPES,
     EVENT_SETTINGS_CHANGED,
     PLATFORM_BINARY_SENSOR,
 )
@@ -57,7 +57,7 @@ SCHEMA_UPDATE_ENTITY_SERVICE = vol.Schema(
         vol.Required(CONF_ENTITY_ID): cv.entity_id,
         vol.Optional(CONF_AREA_NAME): vol.All(str, vol.Length(min=0)),
         vol.Optional(CONF_SORT_ORDER): vol.All(str, vol.Length(min=1, max=8)),
-        vol.Optional(CONF_TYPE): vol.In(ENTITY_TYPES),
+        vol.Optional(CONF_TYPE): vol.In(ALL_ENTITY_TYPES),
         vol.Optional(CONF_VISIBLE): cv.boolean,
     }
 )
