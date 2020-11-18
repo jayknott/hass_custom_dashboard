@@ -13,7 +13,7 @@
         {{ areas | to_json }}
 
 - !include security.yaml
-# - !include lights.yaml
+- !include lights.yaml
 # - !include someting_on.yaml
 
 - !include settings.yaml

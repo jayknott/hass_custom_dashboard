@@ -145,6 +145,12 @@ class CustomDashboardFlexboxCard extends LitElement {
     } = this._config;
 
     const items = this._refCards.map((card, card_i) => {
+
+      // Do not render hidden condition cards
+      if (card && card.style && card.style.display && card.style.display == 'none') {
+        return '';
+      }
+
       const card_config = {
         column_span: 1,
         row_span: 1,
