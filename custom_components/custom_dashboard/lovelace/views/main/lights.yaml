@@ -6,7 +6,7 @@ panel: true
 title: {{ _custom_dashboard_trans.light.other }}
 icon: hass:lightbulb
 path: lights
-visible: false
+visible: true
 cards:
   - type: custom:mod-card
     style:
@@ -44,6 +44,15 @@ cards:
                       entity_name: {{ _custom_dashboard_trans.light.one }}
                       entities_name: {{ _custom_dashboard_trans.light.other }}
             {% endfor %}
+            - card:
+                type: conditional
+                conditions:
+                  - entity: binary_sensor.custom_dashboard_light
+                    state: 'off'
+                card:
+                  !include
+                    - ../components/caption_text.yaml
+                    - content: {{ _custom_dashboard_trans.light.all_off }}
         {% endif %}
         {% if all_lights and all_lights | length > 0 %}
         - type: custom:custom-dashboard-flexbox-card
@@ -70,4 +79,8 @@ cards:
                       entity_name: {{ _custom_dashboard_trans.light.one }}
                       entities_name: {{ _custom_dashboard_trans.light.other }}
               {% endfor %}
+        {% else %}
+        - !include
+            - ../components/caption_text.yaml
+            - content: {{ _custom_dashboard_trans.light.none }}
         {% endif %}

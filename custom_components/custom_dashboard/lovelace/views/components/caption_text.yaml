@@ -1,0 +1,12 @@
+type: markdown
+content: |
+  {{ content }}
+style: |
+  ha-card {
+    box-shadow: none;
+    background: none;
+    color: var(--secondary-text-color)
+  }
+  ha-markdown {
+    padding: 12px 0px 6px {{ padding_left | default('0px') }} !important;
+  }

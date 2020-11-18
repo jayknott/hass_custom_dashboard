@@ -46,6 +46,8 @@ icon:
   other: Icons
 light:
   all: All Lights
+  all_off: All lights are off
+  none: No lights to display
   one: Light
   other: Lights
 lock:
