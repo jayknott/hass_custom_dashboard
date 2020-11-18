@@ -151,8 +151,6 @@ cards:
 
         {% if security and (security | length > 0) %}
         - type: custom:custom-dashboard-flexbox-card
-          item_height: 120
-          item_width: 120
           cards:
             {% for device in security %}
             - card:
@@ -168,8 +166,6 @@ cards:
 
         {% if (all_lights and (all_lights | length > 0)) or  (lights and (lights | length) > 0) %}
         - type: custom:custom-dashboard-flexbox-card
-          item_height: 120
-          item_width: 120
           cards:
               {% if lights and (lights | length > 1) %}
               {% for light in all_lights %}
@@ -196,8 +192,6 @@ cards:
         {% if ((remotes and (remotes | length) > 0) or (remote_buttons and (remote_buttons | length) > 0)) %}
         {% if remotes and (remotes | length) > 0 %}
         - type: custom:custom-dashboard-flexbox-card
-          item_height: 120
-          item_width: 120
           {% if remote_buttons and (remote_buttons | length) > 0 %}
           margin_bottom: '0'
           {% endif %}
@@ -264,8 +258,6 @@ cards:
 
         {% if other_devices and (other_devices | length) > 0 %}
         - type: custom:custom-dashboard-flexbox-card
-          item_height: 120
-          item_width: 120
           cards:
               {% for device in other_devices %}
               - card:

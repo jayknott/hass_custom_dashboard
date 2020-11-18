@@ -29,8 +29,6 @@ cards:
           - title: {{ _custom_dashboard_trans.security.one }}
         {% if security and security | length > 0 %}
         - type: custom:custom-dashboard-flexbox-card
-          item_height: 120
-          item_width: 120
           cards:
               {% for device in security %}
               - card:
@@ -47,8 +45,6 @@ cards:
         {% endif %}
         {% if security_sensors and security_sensors | length > 0 %}
         - type: custom:custom-dashboard-flexbox-card
-          item_height: 120
-          item_width: 120
           cards:
               {% for device in security_sensors %}
               - card:
@@ -58,4 +54,3 @@ cards:
                       entity: {{ device.entity_id }}
               {% endfor %}
         {% endif %}
-        

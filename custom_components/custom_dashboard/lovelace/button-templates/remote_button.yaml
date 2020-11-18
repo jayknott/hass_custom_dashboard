@@ -1,5 +1,4 @@
 template: base
-show_state: false
 show_name: false
 size: 60%
 tap_action:

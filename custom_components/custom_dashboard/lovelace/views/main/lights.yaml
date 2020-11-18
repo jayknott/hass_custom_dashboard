@@ -29,8 +29,6 @@ cards:
           - title: {{ _custom_dashboard_trans.light.other }}
         {% if lights and lights | length > 0 %}
         - type: custom:custom-dashboard-flexbox-card
-          item_height: 120
-          item_width: 120
           cards:
             {% for light in lights %}
             - card:
@@ -49,8 +47,6 @@ cards:
         {% endif %}
         {% if all_lights and all_lights | length > 0 %}
         - type: custom:custom-dashboard-flexbox-card
-          item_height: 120
-          item_width: 120
           cards:
               {% for light in all_lights %}
               - card:
@@ -64,8 +60,6 @@ cards:
         {% endif %}
         {% if lights and lights | length > 0 %}
         - type: custom:custom-dashboard-flexbox-card
-          item_height: 120
-          item_width: 120
           cards:
               {% for light in lights %}
               - card:

@@ -1,11 +1,9 @@
-template:
-  - status_sensor
-show_state: false
+template: status_sensor
 color: var(--error-state-color)
 icon: mdi:shield-alert
 state:
   - operator: template
-    value: "[[[ return ['locked', 'closed', 'off'].includes(entity.state) ]]]"
+    value: "[[[ return entity ? ['locked', 'closed', 'off'].includes(entity.state) : 'off' ]]]"
     icon: mdi:shield-check
     color: var(--paper-item-icon-color)
     styles:

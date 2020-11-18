@@ -69,7 +69,7 @@ class CustomDashboardFlexboxCard extends LitElement {
     this._config = {
       item_width: 0,
       item_height: 0,
-      grid_margin: 10,
+      grid_margin: 0,
       card_padding: 0,
       margin_bottom: '20px',
       unit: 'px',
@@ -136,7 +136,7 @@ class CustomDashboardFlexboxCard extends LitElement {
 
     const {
       cards = [],
-      grid_margin = 10,
+      grid_margin = 0,
       item_height = 0,
       item_width = 0,
       margin_bottom= '20px',
@@ -145,11 +145,6 @@ class CustomDashboardFlexboxCard extends LitElement {
     } = this._config;
 
     const items = this._refCards.map((card, card_i) => {
-
-      // Do not render hidden condition cards
-      if (card && card.style && card.style.display && card.style.display == 'none') {
-        return '';
-      }
 
       const card_config = {
         column_span: 1,

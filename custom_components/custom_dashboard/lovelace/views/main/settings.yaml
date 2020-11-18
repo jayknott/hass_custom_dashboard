@@ -40,8 +40,6 @@ cards:
                   - ../components/page_header.yaml
                   - title: '{{ _custom_dashboard_trans.setting.other }}'
         - type: custom:custom-dashboard-flexbox-card
-          item_height: 120
-          item_width: 120
           cards:
             {% for setting in settings %}
               - card:
