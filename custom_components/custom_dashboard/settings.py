@@ -7,6 +7,7 @@ from homeassistant.const import (
     ATTR_NAME,
     CONF_ENTITY_ID,
     CONF_ICON,
+    CONF_ID,
     CONF_TYPE,
 )
 from homeassistant.core import ServiceCall
@@ -151,7 +152,7 @@ async def _get_area_id_by_name(area_name: Optional[str]) -> Optional[str]:
             f"Cannot update area because an area with name '{area_name}' doesn't exist"
         )
 
-    return area.id
+    return area[CONF_ID]
 
 
 def _get_entity_by_id(entity_id: Optional[str]) -> Optional[EntitySettings]:
