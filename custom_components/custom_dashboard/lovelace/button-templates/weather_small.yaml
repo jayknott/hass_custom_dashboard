@@ -38,7 +38,12 @@ custom_fields:
         new Date(entity.attributes.forecast[0].datetime) < tomorrow
       ) {
         let forecast = entity.attributes.forecast[0];
-        label = `<span>${forecast.templow}°/${forecast.temperature}°</span>`;
+        label = `
+          <ha-icon
+            icon="mdi:swap-vertical-bold"
+            style="width: 14px; height: 14px; color: var(--secondary-text-color)"
+          ></ha-icon>
+          <span>${forecast.templow}°/${forecast.temperature}°</span>`;
       }
 
       return label;
@@ -61,7 +66,7 @@ custom_fields:
           label = `
             <ha-icon
               icon="mdi:water"
-              style="width: 11px; height: 11px; color: var(--secondary-text-color)"
+              style="width: 14px; height: 14px; color: var(--secondary-text-color)"
             ></ha-icon>
             <span>${forecast.precipitation_probability}%</span>
           `;
@@ -123,4 +128,9 @@ styles:
       - justify-self: end
       - color: var(--secondary-text-color)
       - font-size: 70%
-  
+style:
+  ha-icon:
+    $: |
+      ha-svg-icon {
+        vertical-align: top;
+      }

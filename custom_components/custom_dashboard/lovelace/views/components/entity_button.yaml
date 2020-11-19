@@ -38,7 +38,8 @@
 type: custom:button-card
 template: {{ template }}
 entity: {{ entity }}
-name: {{ display_name }}
+name: >
+  {{ display_name }}
 {% if navigation_path is defined %}
 tap_action:
   navigation_path: {{ navigation_path }}

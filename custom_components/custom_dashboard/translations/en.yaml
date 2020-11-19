@@ -2,9 +2,13 @@
 
 title: Custom Dashboard
 
+automation:
+  one: Automation
+  other: Automations
 battery:
   all: All Batteries
-  all_off: All batteries are sufficiently charged
+  all_off: All batteries are at sufficient levels
+  charging: Charging
   none: No batteries to display
   one: Battery
   other: Batteries
@@ -38,6 +42,9 @@ device:
   none: No devices to display
   one: Device
   other: Devices
+device_tracker:
+  one: Device Tracker
+  other: Device Trackers
 doorbell:
   one: Doorbell
   other: Doorbells
@@ -47,6 +54,9 @@ doorbell_ding:
 error:
   one: Error
   other: Errors
+group:
+  one: Group
+  other: Groups
 home:
   one: Home
   other: Homes
@@ -102,8 +112,10 @@ sensor:
   one: Sensor
   other: Sensors
 setting:
+  hidden: Hidden Devices
   one: Setting
   other: Settings
+  unused: Unused Devices
 sort_order:
   one: Sort Order
   other: Sort Orders
@@ -125,3 +137,6 @@ visible:
 weather:
   one: Weather
   other: Weather
+zone:
+  one: Zone
+  other: Zones

@@ -75,7 +75,13 @@ custom_fields:
       let security_state = states['binary_sensor.custom_dashboard_area_{{area.id}}_security'];
       return `
         <ha-icon
-          icon=${security_state && security_state.state == 'on' ? 'mdi:shield-alert' : 'mdi:shield-check'}
+          icon=${
+            security_state == null
+              ? 'mdi:shield'
+              : security_state && security_state.state == 'on'
+                ? 'mdi:shield-alert'
+                : 'mdi:shield-check'
+          }
           style="width: 20px; height: 20px; color: var(
             ${
               !security_state || security_state.attributes.tracked_entity_count == 0

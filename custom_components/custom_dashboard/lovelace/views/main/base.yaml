@@ -20,6 +20,8 @@
 - !include settings.yaml
 - !include settings_areas.yaml
 - !include settings_entities.yaml
+- !include settings_hidden.yaml
+- !include settings_unused.yaml
 
 {% if areas and (areas | length) >= 1 %}
 {% for area in areas %}

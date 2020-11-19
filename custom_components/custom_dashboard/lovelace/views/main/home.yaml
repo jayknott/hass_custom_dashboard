@@ -69,11 +69,11 @@ cards:
                     template: status_battery
                     navigation_path: batteries
             {% if climate_main is not none %}
-            - card:
-                !include
-                  - ../components/entity_button.yaml
-                  - entity: {{ climate_main.entity_id }}
-                    template: status_climate
+            # - card:
+            #     !include
+            #       - ../components/entity_button.yaml
+            #       - entity: {#climate_main.entity_id #}
+            #         template: status_climate
             {% endif %}
         {% if climate_main is not none or weather is not none %}
         - type: custom:custom-dashboard-flexbox-card
@@ -83,32 +83,37 @@ cards:
             - card:
                 !include
                   - ../components/entity_button.yaml
-                  - entity: {{ climate_main.entity_id }}
-                    template: number_sensor
-                    icon: mdi:thermometer
-                    state_display: >
-                      [[[
-                        try {
-                          return `${Math.round(parseFloat(entity.attributes.current_temperature))}°`;
-                        } catch {
-                          return '--°';
-                        }
-                        ]]]
-            {% if state_attr(climate_main.entity_id, 'current_humidity') is not none %}
-            - card:
-                !include
-                  - ../components/entity_button.yaml
-                  - template: number_sensor
+                  - template: climate_small
                     entity: {{ climate_main.entity_id }}
-                    icon: mdi:water-percent
-                    state_display: >
-                      [[[
-                        try {
-                          return `${Math.round(parseFloat(entity.attributes.current_humidity))}%`;
-                        } catch {
-                          return '--%';
-                        }
-                        ]]]
+            # - card:
+            #     !include
+            #       - ../components/entity_button.yaml
+            #       - entity: {# climate_main.entity_id #}
+            #         template: number_sensor
+            #         icon: mdi:thermometer
+            #         state_display: >
+            #           [[[
+            #             try {
+            #               return `${Math.round(parseFloat(entity.attributes.current_temperature))}°`;
+            #             } catch {
+            #               return '--°';
+            #             }
+            #             ]]]
+            {% if state_attr(climate_main.entity_id, 'current_humidity') is not none %}
+            # - card:
+            #     !include
+            #       - ../components/entity_button.yaml
+            #       - template: number_sensor
+            #         entity: {# climate_main.entity_id #}
+            #         icon: mdi:water-percent
+            #         state_display: >
+            #           [[[
+            #             try {
+            #               return `${Math.round(parseFloat(entity.attributes.current_humidity))}%`;
+            #             } catch {
+            #               return '--%';
+            #             }
+            #             ]]]
             {% endif %}
             {% endif %}
             {% if weather is not none %}

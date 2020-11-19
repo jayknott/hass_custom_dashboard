@@ -28,3 +28,17 @@ styles:
             ? 'var(--paper-item-icon-color)'
             : 'var(--text-primary-color)'
         ]]]
+  label:
+    - color: >
+        [[[
+          return ['locked', 'closed', 'off'].includes(entity.state)
+            ? 'var(--secondary-text-color)'
+            : 'var(--text-primary-color)'
+        ]]]
+  state:
+    - color: >
+        [[[
+          return ['locked', 'closed', 'off'].includes(entity.state)
+            ? 'var(--secondary-text-color)'
+            : 'var(--text-primary-color)'
+        ]]]

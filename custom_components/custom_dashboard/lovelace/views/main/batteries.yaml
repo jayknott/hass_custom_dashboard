@@ -31,17 +31,15 @@ cards:
           cards:
             {% for battery in batteries %}
             - card:
-                type: conditional
-                conditions:
-                  {% for value in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'unavailable', 'on'] %}
-                  - entity: {{ battery.entity_id }}
-                    state: '{{ value }}'
-                  {% endfor %}
-                card:
-                  !include
-                    - ../components/entity_button.yaml
-                    - template: battery
-                      entity: {{ battery.entity_id }}
+                type: custom:state-switch
+                entity: template
+                template: "{% raw %}{{{% endraw %} 'on' if states('{{ battery.entity_id }}') in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'unavailable', 'on'] else 'off' {% raw %}}}{% endraw %}"
+                states:
+                  'on':
+                    !include
+                      - ../components/entity_button.yaml
+                      - template: battery
+                        entity: {{ battery.entity_id }}
             {% endfor %}
             - card:
                 type: conditional

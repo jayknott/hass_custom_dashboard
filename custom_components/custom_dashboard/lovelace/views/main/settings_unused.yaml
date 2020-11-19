@@ -1,0 +1,57 @@
+{% set entities =
+  _custom_dashboard_entities |
+  rejectattr('area_id') |
+  rejectattr('type', 'in', [
+    'person',
+    'input_boolean',
+    'input_number',
+    'input_select',
+    'input_text',
+    'sun',
+    'zone'
+  ]) |
+  selectattr('visible') |
+  sort(attribute='type,name') |
+  list
+%}
+{% set types = entities | map(attribute='type') | unique | sort | list  %}
+
+panel: true
+title: {{ _custom_dashboard_trans.setting.unused }}
+icon: mdi:devices
+path: settings_unused
+visible: false
+cards:
+  - type: custom:mod-card
+    style:
+      $:
+        .: |
+          :host {
+            padding: 12px;
+          }
+      hui-vertical-stack-card:
+        $: |
+          #root > :first-child, #root > * {
+            margin-top: 0 !important;
+            margin-bottom: 0 !important;
+          }
+    card:
+      type: vertical-stack
+      cards:
+        - !include
+          - ../components/page_header.yaml
+          - title: {{ _custom_dashboard_trans.setting.unused }}
+        {% for type in types %}
+        - !include
+          - ../components/section_header.yaml
+          - title: {{ (_custom_dashboard_trans[type] | default({}, true))['other'] | default(type | replace('_', ' ') | title, true) }}
+        - type: custom:custom-dashboard-flexbox-card
+          cards:
+              {% for device in entities | selectattr('type', 'equalto', type) | list %}
+              - card:
+                  !include
+                    - ../components/entity_button.yaml
+                    - template: device
+                      entity: {{ device.entity_id }}
+              {% endfor %}
+        {% endfor %}

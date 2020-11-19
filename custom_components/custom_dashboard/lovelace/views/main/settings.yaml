@@ -14,6 +14,22 @@
         "action": "navigate",
         "navigation_path": "settings_entities"
       }
+    },
+    {
+      "name": _custom_dashboard_trans.setting.hidden,
+      "icon": "mdi:eye-off",
+      "tap_action": {
+        "action": "navigate",
+        "navigation_path": "settings_hidden"
+      }
+    },
+    {
+      "name": _custom_dashboard_trans.setting.unused,
+      "icon": "mdi:devices",
+      "tap_action": {
+        "action": "navigate",
+        "navigation_path": "settings_unused"
+      }
     }
   ]
 %}

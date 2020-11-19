@@ -1,5 +1,43 @@
 template: entity
+show_label: true
+icon: >
+  [[[
+    let level = 0;
+    let charging = false;
+
+    if (entity.state.match(/\d+/i)) {
+      level = Math.floor(parseInt(entity.state) / 10) * 10;
+    } else {
+      level = entity.state == 'on' ? 0 : 100;
+    }
+
+    if (
+      entity.attributes['Battery State'] &&
+      ['charging', 'full'].includes(entity.attributes['Battery State'].toLowerCase())
+    ) {
+      charging = true;
+    }
+
+    if (level == 0 && !charging) return 'mdi:battery-alert-variant-outline';
+    if (level == 0 && charging) return 'mdi:battery-charging-outline';
+    if (level == 100 && !charging) return 'mdi:battery';
+    if (level == 100 && charging) return 'mdi:battery-charging-100';
+
+    return `mdi:battery-${charging ? 'charging-' : ''}${level}`;
+  ]]]
+tap_action:
+  action: more-info
+hold_action:
+  action: none
 show_state: true
+label: >
+  [[[ 
+    if (!entity.attributes['Battery State']) return null;
+
+    return ['charging', 'full'].includes(entity.attributes['Battery State'].toLowerCase())
+      ? '{{ _custom_dashboard_trans.battery.charging }}'
+      : null;
+  ]]]
 styles:
   icon:
     - color: >

@@ -1,7 +1,7 @@
 template: number_sensor
 show_state: true
 state_display: >
-  [[[ return entity.state == 'heat_cool' ? '{{_custom_dashboard_trans.climate.heat_cool}}' : null ]]]
+  [[[ return `${entity.attributes.current_temperature}°` ]]]
 icon: >
   [[[
       switch(entity.attributes.hvac_action) {
@@ -50,9 +50,9 @@ custom_fields:
       let label = `
         <ha-icon
           icon="mdi:thermostat"
-          style="width: 11px; height: 11px; color: var(--secondary-text-color)"
+          style="width: 14px; height: 14px; color: var(--secondary-text-color); margin: 0"
         ></ha-icon>
-        <span>${state} ${entity.attributes.current_temperature}°</span>
+        <span>${state} ${entity.attributes.temperature}°</span>
       `;
 
       return label;
@@ -64,7 +64,7 @@ custom_fields:
       return `
         <ha-icon
           icon="mdi:water-percent"
-          style="width: 11px; height: 11px; color: var(--secondary-text-color)"
+          style="width: 14px; height: 14px; color: var(--secondary-text-color)"
         ></ha-icon>
         <span>${entity.attributes.current_humidity}%</span>
       `;
@@ -73,7 +73,7 @@ styles:
   card:
     - width: 184px
   grid:
-    - grid-template-areas: '"i s temp" "i s percip"'
+    - grid-template-areas: '"i s settings" "i s humid"'
     - grid-template-columns: 35px 1fr min-content
     - grid-template-rows: 1fr min-content
   state:
@@ -95,4 +95,13 @@ styles:
       - justify-self: end
       - color: var(--secondary-text-color)
       - font-size: 70%
+style:
+  ha-icon:
+    $: |
+      ha-svg-icon {
+        vertical-align: top;
+      }
+      
+
+
 
