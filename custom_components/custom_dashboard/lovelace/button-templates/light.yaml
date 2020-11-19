@@ -13,7 +13,7 @@ custom_fields:
               ? ''
               : `<ha-icon
                   icon="hass:lightbulb"
-                  style="width: 20px; height: 20px; color: rgb(${entity.attributes.rgb_color.join(', ')});"
+                  style="width: 20px; height: 20px; color: var(--button-card-light-color-no-temperature);"
                 />`
     ]]]
 styles:

@@ -23,7 +23,6 @@ icon: >
 
       return 'mdi:thermostat';
     ]]]
-icon_color: var(--paper-item-icon-active-color)
 styles:
   icon:
     - color: >

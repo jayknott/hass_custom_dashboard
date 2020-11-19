@@ -1,7 +1,6 @@
 template: base
 show_name: false
 size: 60%
-color: var(--paper-item-icon-color)
 tap_action:
   action: navigate
 hold_action:
@@ -21,6 +20,9 @@ styles:
     - border-width: 0
     - border-style: solid
     - border-color: transparent
+  icon:
+    - color: >
+        [[[ return !entity ? 'var(--paper-item-icon-color)' : null ]]]
   custom_fields:
     counter:
       - position: absolute

@@ -1,6 +1,5 @@
 template: status_sensor
-icon: mdi:shield-alert
-color: var(--error-state-color)
+icon: mdi:shield-check
 extra_styles: |
   @keyframes blinking {
     0% { transform: scale(1); }
@@ -11,13 +10,12 @@ extra_styles: |
     100% { transform: scale(1); }
   }
 state:
+  - value: 'on'
+    styles:
+      icon:
+        - animation: blinking 10s ease infinite
+        - color: var(--error-state-color)
   - value: 'off'
     icon: mdi:shield-check
     color: var(--paper-item-icon-color)
-    styles:
-      icon:
-        - animation: none
-styles:
-  icon:
-    - animation: blinking 10s ease infinite
-  
+
