@@ -2,8 +2,6 @@ from homeassistant.const import (
     CONF_DEFAULT,
     STATE_CLOSED,
     STATE_LOCKED,
-    STATE_OFF,
-    STATE_ON,
     STATE_PLAYING,
 )
 

@@ -1,0 +1,73 @@
+{% set entities = _custom_dashboard_entities | selectattr('area_id') | selectattr('visible') | list %}
+{% set batteries = entities | selectattr('type', 'in', ['battery']) | sort(attribute='name') | list %}
+
+panel: true
+title: {{ _custom_dashboard_trans.battery.other }}
+icon: mdi:battery
+path: batteries
+visible: false
+cards:
+  - type: custom:mod-card
+    style:
+      $:
+        .: |
+          :host {
+            padding: 12px;
+          }
+      hui-vertical-stack-card:
+        $: |
+          #root > :first-child, #root > * {
+            margin-top: 0 !important;
+            margin-bottom: 0 !important;
+          }
+    card:
+      type: vertical-stack
+      cards:
+        - !include
+          - ../components/page_header.yaml
+          - title: {{ _custom_dashboard_trans.battery.other }}
+        {% if batteries and batteries | length > 0 %}
+        - type: custom:custom-dashboard-flexbox-card
+          cards:
+            {% for battery in batteries %}
+            - card:
+                type: conditional
+                conditions:
+                  {% for value in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'unavailable', 'on'] %}
+                  - entity: {{ battery.entity_id }}
+                    state: '{{ value }}'
+                  {% endfor %}
+                card:
+                  !include
+                    - ../components/entity_button.yaml
+                    - template: battery
+                      entity: {{ battery.entity_id }}
+            {% endfor %}
+            - card:
+                type: conditional
+                conditions:
+                  - entity: binary_sensor.custom_dashboard_battery
+                    state: 'off'
+                card:
+                  !include
+                    - ../components/caption_text.yaml
+                    - content: {{ _custom_dashboard_trans.battery.all_off }}
+        - !include
+          - ../components/section_header.yaml
+          - title: {{ _custom_dashboard_trans.battery.all }}
+        {% if batteries and batteries | length > 0 %}
+        - type: custom:custom-dashboard-flexbox-card
+          cards:
+              {% for battery in batteries %}
+              - card:
+                  !include
+                    - ../components/entity_button.yaml
+                    - template: battery
+                      entity: {{ battery.entity_id }}
+              {% endfor %}
+        {% endif %}
+        {% else %}
+        - !include
+            - ../components/caption_text.yaml
+            - content: {{ _custom_dashboard_trans.battery.none }}
+        {% endif %}

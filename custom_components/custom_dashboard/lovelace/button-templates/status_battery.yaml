@@ -1,0 +1,6 @@
+template: status_sensor
+icon: mdi:battery
+state:
+  - value: 'on'
+    icon: mdi:battery-alert
+

@@ -1,0 +1,10 @@
+template: entity
+show_state: true
+styles:
+  icon:
+    - color: >
+        [[[
+          return ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'on', 'unavailable'].includes(entity.state)
+            ? 'var(--error-state-color)'
+            : 'var(--paper-item-icon-color)'
+        ]]]

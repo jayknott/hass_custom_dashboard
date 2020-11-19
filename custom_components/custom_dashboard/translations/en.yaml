@@ -2,6 +2,12 @@
 
 title: Custom Dashboard
 
+battery:
+  all: All Batteries
+  all_off: All batteries are sufficiently charged
+  none: No batteries to display
+  one: Battery
+  other: Batteries
 camera:
   one: Camera
   other: Cameras

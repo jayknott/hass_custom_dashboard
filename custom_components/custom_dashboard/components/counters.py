@@ -179,11 +179,11 @@ def _counter_templates(
     standard_states = []
     compare_states = []
     for state in states:
-        compare_match = re.match("(<=|>=|<|>) *(\d+)", str(state))
+        compare_match = re.match("(<=|>=|<|>) *(\\d+)", str(state))
         if compare_match is None:
             standard_states.append(state)
-
-        compare_states.append([compare_match[1], compare_match[2]])
+        else:
+            compare_states.append([compare_match[1], compare_match[2]])
 
     state_template = []
     count_template = []

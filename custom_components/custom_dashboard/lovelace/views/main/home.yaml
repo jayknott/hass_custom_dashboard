@@ -62,6 +62,12 @@ cards:
                     template: status_sensor
                     icon: mdi:play-circle
                     navigation_path: something_on
+            - card:
+                !include
+                  - ../components/entity_button.yaml
+                  - entity: binary_sensor.custom_dashboard_battery
+                    template: status_battery
+                    navigation_path: batteries
             {% if climate_main is not none %}
             - card:
                 !include
