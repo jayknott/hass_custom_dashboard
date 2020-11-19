@@ -1,3 +1,4 @@
+template: base
 show_icon: false
 show_name: false
 show_state: true
@@ -11,7 +12,6 @@ styles:
   card:
     - width: 87px
     - height: 87px
-    - --mdc-ripple-color: var(--primary-color)
     - background-image: >-
         [[[ return "linear-gradient(to bottom, transparent 60%, var(--text-light-primary-color)), " +
         "url(\"" + entity.attributes.entity_picture + "\")" ]]]
@@ -22,7 +22,4 @@ styles:
     - grid-template-columns: 1fr
     - grid-template-rows: 1fr
   state:
-    - font-size: .8em
-    - justify-self: start
     - padding-left: 5px
-    - align-self: flex-end

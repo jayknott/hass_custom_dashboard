@@ -1,17 +1,23 @@
 template: status_sensor
-color: var(--error-state-color)
 icon: mdi:shield-alert
+color: var(--error-state-color)
+extra_styles: |
+  @keyframes blinking {
+    0% { transform: scale(1); }
+    5% { transform: scale(1.2); }
+    10% { transform: scale(1); }
+    15% { transform: scale(1.2); }
+    20% { transform: scale(1); }
+    100% { transform: scale(1); }
+  }
 state:
-  - operator: template
-    value: "[[[ return entity ? ['locked', 'closed', 'off'].includes(entity.state) : 'off' ]]]"
+  - value: 'off'
     icon: mdi:shield-check
     color: var(--paper-item-icon-color)
     styles:
-      card:
-        - border-width: 0
-        - border-color: transparent
+      icon:
+        - animation: none
 styles:
-  card:
-    - border-width: 2px
-    - border-style: solid
-    - border-color: var(--error-state-color)
+  icon:
+    - animation: blinking 10s ease infinite
+  

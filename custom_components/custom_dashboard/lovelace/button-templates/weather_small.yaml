@@ -1,4 +1,4 @@
-template: binary_sensor
+template: number_sensor
 show_state: true
 state_display: '[[[ return `${entity.attributes.temperature}°` ]]]'
 icon: >
@@ -77,15 +77,12 @@ custom_fields:
 styles:
   card:
     - width: 184px
-    - border-radius: 10px
   grid:
     - grid-template-areas: '"i s temp" "i s percip"'
     - grid-template-columns: 45px 1fr min-content
     - grid-template-rows: 1fr min-content
   state:
     - justify-self: start
-    - padding-left: 0
-    # - padding-right: 5px
   icon:
     - color: >
         [[[

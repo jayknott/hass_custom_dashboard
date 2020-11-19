@@ -65,15 +65,18 @@ ENTITY_TYPES = [
     "climate_main",
     "humidity",
     "light",
+    "light_always_on",
     "lock",
     "media_player",
     "media_player_no_volume",
     "motion",
     "opening",
     "remote",
+    "remote_always_on",
     "remote_button",
     "sensor",
     "switch",
+    "switch_always_on",
     "temperature",
     "vacuum",
     "weather",
@@ -121,6 +124,7 @@ TRACKED_ENTITY_TYPE_ON_STATES = {
 # and all other entities seperately.
 SOMETHING_ON_ENTITY_TYPES = [
     "media_player",
+    "media_player_no_volume",
     "remote",
     "switch",
 ]

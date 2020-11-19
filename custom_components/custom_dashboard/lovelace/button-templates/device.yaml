@@ -1,2 +1,12 @@
-tempalte: base
+template: base
 show_state: true
+color: var(--paper-item-icon-color)
+state:
+  - value: 'on'
+    color: var(--paper-item-icon-active-color)
+tap_action:
+  action: >
+    [[[ return ['switch'].includes(entity.entity_id.split('.')[0]) ? 'toggle' : 'more-info' ]]]
+hold_action:
+  action: >
+    [[[ return ['switch'].includes(entity.entity_id.split('.')[0]) ? 'more-info' : 'none' ]]]

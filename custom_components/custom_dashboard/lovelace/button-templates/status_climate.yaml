@@ -5,7 +5,6 @@ state_display: >
   [[[ return entity.state == 'heat_cool' ? '{{_custom_dashboard_trans.climate.heat_cool}}' : null ]]]
 label: >
   [[[ return entity.attributes.temperature != null ? `${entity.attributes.temperature}°` : null ]]]
-icon_color: var(--paper-item-icon-active-color)
 icon: >
   [[[
       switch(entity.attributes.hvac_action) {

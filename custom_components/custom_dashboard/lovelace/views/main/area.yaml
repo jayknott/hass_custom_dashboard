@@ -10,9 +10,9 @@
 {% set humidities = entities | selectattr('type', 'equalto', 'humidity') | sort(attribute='sort_order,name') | list %}
 {% set climates = entities | selectattr('type', 'equalto', 'climate') | sort(attribute='sort_order,name') | list %}
 {% set all_lights = entities | selectattr('type', 'equalto', 'all_lights') | sort(attribute='sort_order,name') | list %}
-{% set lights = entities | selectattr('type', 'equalto', 'light') | sort(attribute='sort_order,name') | list %}
-{% set switches = entities | selectattr('type', 'equalto', 'switch') | sort(attribute='sort_order,name') | list %}
-{% set remotes = entities | selectattr('type', 'equalto', 'remote') | sort(attribute='sort_order,name') | list %}
+{% set lights = entities | selectattr('type', 'in', ['light', 'light_always_on']) | sort(attribute='sort_order,name') | list %}
+{% set switches = entities | selectattr('type', 'in', ['switch', 'switch_always_on']) | sort(attribute='sort_order,name') | list %}
+{% set remotes = entities | selectattr('type', 'in', ['remote', 'remote_always_on']) | sort(attribute='sort_order,name') | list %}
 {% set remote_buttons = entities | selectattr('type', 'equalto', 'remote_button') | sort(attribute='sort_order,name') | list %}
 {% set media_players = entities | selectattr('type', 'in', ['media_player', 'media_player_no_volume']) | sort(attribute='sort_order,name') | list %}
 {% set cameras = entities | selectattr('type', 'equalto', 'camera') | sort(attribute='sort_order,name') | list %}
@@ -25,11 +25,13 @@
     'climate_main',
     'humidity',
     'light',
+    'light_always_on',
     'media_player',
     'media_player_no_volume',
     'motion',
     'occupancy',
     'remote',
+    'remote_always_on',
     'remote_button',
     'security_lock',
     'security_motion',
@@ -209,8 +211,6 @@ cards:
         {% endif %}
         {% if remote_buttons and (remote_buttons | length) > 0 %}
         - type: custom:custom-dashboard-flexbox-card
-          item_height: 55
-          item_width: 55
           cards:
               {% for remote_button in remote_buttons %}
               - card:
@@ -241,8 +241,6 @@ cards:
 
         {% if cameras and (cameras | length > 0) %}
         - type: custom:custom-dashboard-flexbox-card
-          item_height: 213.75
-          item_width: 380
           cards:
               {% for camera in cameras %}
               - card:
@@ -263,7 +261,7 @@ cards:
               - card:
                   !include
                     - ../components/entity_button.yaml
-                    - template: base
+                    - template: device
                       entity: {{ device.entity_id }}
                       room_name: >
                         {{ room_name }}

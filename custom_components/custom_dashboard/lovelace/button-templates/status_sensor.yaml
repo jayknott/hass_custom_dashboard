@@ -13,9 +13,6 @@ custom_fields:
       let count = parseInt(entity.attributes.count || 0);
       return count >= 100 ? '99+' : count;
       ]]]
-state:
-  - value: 'on'
-    color: var(--paper-item-icon-active-color)
 styles:
   card:
     - width: 87px

@@ -24,6 +24,9 @@ color:
   warm: Warm
   white: White
 device:
+  all: All Devices
+  all_off: All devices are off
+  none: No devices to display
   one: Device
   other: Devices
 doorbell:

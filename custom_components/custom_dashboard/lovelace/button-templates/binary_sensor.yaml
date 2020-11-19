@@ -1,5 +1,5 @@
+template: base
 show_name: false
-show_state: false
 size: 60%
 color: var(--paper-item-icon-color)
 tap_action:
@@ -12,9 +12,9 @@ styles:
   card:
     - width: 45px
     - height: 45px
-    - --mdc-ripple-color: var(--primary-color)
     - border-radius: 50%
   grid:
     - grid-template-areas: '"i"'
     - grid-template-columns: 1fr
     - grid-template-rows: 1fr
+  state:

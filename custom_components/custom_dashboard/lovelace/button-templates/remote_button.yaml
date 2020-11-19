@@ -8,12 +8,9 @@ double_tap_action:
   action: none
 hold_action:
   action: none
-state:
-  - operator: '!='
-    value: 'off'
-    styles:
-      icon:
-        - opacity: '0.2'
 styles:
+  card:
+    - width: 55px
+    - height: 55px
   icon:
     - color: var(--primary-text-color)

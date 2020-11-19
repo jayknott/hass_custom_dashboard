@@ -29,3 +29,12 @@ styles:
     - justify-self: start
     - padding-left: 10px
     - align-self: flex-end
+state:
+  - value: 'unavailable'
+    styles:
+      icon:
+        - opacity: '0.2'
+      name:
+        - opacity: '0.5'
+      state:
+        - opacity: '0.5'

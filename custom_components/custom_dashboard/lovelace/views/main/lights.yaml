@@ -1,12 +1,14 @@
 {% set entities = _custom_dashboard_entities | selectattr('area_id') | selectattr('visible') | list %}
 {% set all_lights = entities | selectattr('type', 'equalto', 'all_lights') | sort(attribute='sort_order,name') | list %}
 {% set lights = entities | selectattr('type', 'equalto', 'light') | sort(attribute='name') | list %}
+{% set lights_always_on = entities | selectattr('type', 'equalto', 'light_always_on') | sort(attribute='name') | list %}
+{% set all_light_entities = entities | selectattr('type', 'in', ['light', 'light_always_on']) | sort(attribute='name') | list %}
 
 panel: true
 title: {{ _custom_dashboard_trans.light.other }}
 icon: hass:lightbulb
 path: lights
-visible: true
+visible: false
 cards:
   - type: custom:mod-card
     style:
@@ -27,7 +29,7 @@ cards:
         - !include
           - ../components/page_header.yaml
           - title: {{ _custom_dashboard_trans.light.other }}
-        {% if lights and lights | length > 0 %}
+        {% if all_light_entities and all_light_entities | length > 0 %}
         - type: custom:custom-dashboard-flexbox-card
           cards:
             {% for light in lights %}
@@ -53,7 +55,6 @@ cards:
                   !include
                     - ../components/caption_text.yaml
                     - content: {{ _custom_dashboard_trans.light.all_off }}
-        {% endif %}
         - !include
           - ../components/section_header.yaml
           - title: {{ _custom_dashboard_trans.light.all }}
@@ -70,10 +71,10 @@ cards:
                       entities_name: {{ _custom_dashboard_trans.light.other }}
               {% endfor %}
         {% endif %}
-        {% if lights and lights | length > 0 %}
+        {% if all_light_entities and all_light_entities | length > 0 %}
         - type: custom:custom-dashboard-flexbox-card
           cards:
-              {% for light in lights %}
+              {% for light in all_light_entities %}
               - card:
                   !include
                     - ../components/entity_button.yaml
@@ -82,6 +83,7 @@ cards:
                       entity_name: {{ _custom_dashboard_trans.light.one }}
                       entities_name: {{ _custom_dashboard_trans.light.other }}
               {% endfor %}
+        {% endif %}
         {% else %}
         - !include
             - ../components/caption_text.yaml
