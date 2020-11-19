@@ -94,6 +94,7 @@ styles:
   name:
     - justify-self: center
     - padding-right: 10px
+    - white-space: nowrap
   grid:
     - grid-template-areas: '"i i i i i i" "space1 lights media motion unsecured space2" "n n n n n n"'
     - grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr

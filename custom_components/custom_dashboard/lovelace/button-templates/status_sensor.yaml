@@ -5,6 +5,7 @@ tap_action:
   action: navigate
 hold_action:
   action: none
+color: auto
 custom_fields:
   counter: >
     [[[
@@ -12,6 +13,10 @@ custom_fields:
       let count = parseInt(entity.attributes.count || 0);
       return count >= 100 ? '99+' : count;
       ]]]
+state:
+  - operator: template
+    value: '[[[ return !entity ]]]'
+    color: var(--paper-item-icon-color)
 styles:
   card:
     - width: 87px
@@ -20,9 +25,6 @@ styles:
     - border-width: 0
     - border-style: solid
     - border-color: transparent
-  icon:
-    - color: >
-        [[[ return !entity ? 'var(--paper-item-icon-color)' : null ]]]
   custom_fields:
     counter:
       - position: absolute

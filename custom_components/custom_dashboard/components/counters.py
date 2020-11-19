@@ -176,18 +176,40 @@ def _counter_templates(
     if len(entity_ids) == 0:
         return None
 
+    standard_states = []
+    compare_states = []
+    for state in states:
+        compare_match = re.match("(<=|>=|<|>) *(\d+)", str(state))
+        if compare_match is None:
+            standard_states.append(state)
+
+        compare_states.append([compare_match[1], compare_match[2]])
+
     state_template = []
     count_template = []
     entity_template = []
-
     for id in entity_ids:
-        state_template.append(f"states('{id}') {'not ' if reject else ''}in {states}")
-        count_template.append(
-            f"(1 if states('{id}') {'not ' if reject else ''}in {states} else 0)"
-        )
-        entity_template.append(
-            f"('{id}' if states('{id}') {'not ' if reject else ''}in {states} else '')"
-        )
+        if len(standard_states) > 0:
+            state_template.append(
+                f"states('{id}') {'not ' if reject else ''}in {standard_states}"
+            )
+            count_template.append(
+                f"(1 if states('{id}') {'not ' if reject else ''}in {standard_states} else 0)"
+            )
+            entity_template.append(
+                f"('{id}' if states('{id}') {'not ' if reject else ''}in {standard_states} else '')"
+            )
+
+        for compare_state in compare_states:
+            state_template.append(
+                f"{'not' if reject else ''}(states('{id}') | int {compare_state[0]} {compare_state[1]} if states('{id}') is regex_match('\\d+') else false)"
+            )
+            count_template.append(
+                f"(1 if {'not' if reject else ''}(states('{id}') | int {compare_state[0]} {compare_state[1]} if states('{id}') is regex_match('\\d+') else false) else 0)"
+            )
+            entity_template.append(
+                f"('{id}' if {'not' if reject else ''}(states('{id}') | int {compare_state[0]} {compare_state[1]} if states('{id}') is regex_match('\\d+') else false) else '')"
+            )
 
     return {
         "state_template": f"{{{{ {' or '.join(state_template)} }}}}",

@@ -1,12 +1,13 @@
-template: base
+template: entity
 show_state: true
+show_label: true
+label: >
+  [[[
+    return entity.attributes.brightness == null
+      ? ''
+      : `${Math.floor(entity.attributes.brightness / 255 * 100)}%`
+  ]]]
 custom_fields:
-  percent: >
-    [[[
-      return entity.attributes.brightness == null
-        ? ''
-        : `${Math.floor(entity.attributes.brightness / 255 * 100)}%`
-    ]]]
   color: >
     [[[
       return entity.attributes.rgb_color == null
@@ -17,16 +18,8 @@ custom_fields:
                 />`
     ]]]
 styles:
-  grid:
-    - grid-template-areas: '"i i" "n n" "s percent"'
-    - grid-template-columns: 1fr min-content
-    - grid-template-rows: 1fr min-content min-content
   custom_fields:
     color:
       - position: absolute
         top: 10px
         right: 10px
-    percent:
-      - font-size: smaller
-      - justify-self: end
-      - padding-right: 10px

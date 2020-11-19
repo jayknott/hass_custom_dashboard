@@ -1,12 +1,22 @@
-template: base
+template: entity
 show_state: true
 color: var(--paper-item-icon-color)
-state:
-  - value: 'on'
-    color: var(--paper-item-icon-active-color)
 tap_action:
   action: >
-    [[[ return ['switch'].includes(entity.entity_id.split('.')[0]) ? 'toggle' : 'more-info' ]]]
+    [[[
+      switch(entity.entity_id.split('.')[0]) {
+        case 'switch':
+          return 'toggle';
+        case 'media_player':
+          return 'call-service';
+        default:
+          return 'more-info';
+      }
+      ]]]
+  service: >
+    [[[ return ['media_player'].includes(entity.entity_id.split('.')[0]) ? 'media_player.media_play_pause' : null ]]]
+  service_data: >
+    [[[ return {entity_id: entity.entity_id} ]]]
 hold_action:
   action: >
-    [[[ return ['switch'].includes(entity.entity_id.split('.')[0]) ? 'more-info' : 'none' ]]]
+    [[[ return ['switch', 'media_player', 'media_player_no_volume'].includes(entity.entity_id.split('.')[0]) ? 'more-info' : 'none' ]]]

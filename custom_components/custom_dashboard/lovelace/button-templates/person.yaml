@@ -10,16 +10,12 @@ double_tap_action:
   action: none
 styles:
   card:
+    - padding: 5px
     - width: 87px
     - height: 87px
     - background-image: >-
         [[[ return "linear-gradient(to bottom, transparent 60%, var(--text-light-primary-color)), " +
         "url(\"" + entity.attributes.entity_picture + "\")" ]]]
     - background-size: cover
-    - color: var(--text-primary-color)
-  grid:
-    - grid-template-areas: '"s"'
-    - grid-template-columns: 1fr
-    - grid-template-rows: 1fr
   state:
-    - padding-left: 5px
+    - color: var(--text-primary-color)

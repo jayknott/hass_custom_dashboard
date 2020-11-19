@@ -53,7 +53,7 @@ cards:
                 type: conditional
                 conditions:
                   - entity: {{ device.entity_id }}
-                    state: {% if device.type in ['media_player', 'media_player_no_volume'] %}playing{% else %}on{% endif %}
+                    state: '{% if device.type in ['media_player', 'media_player_no_volume'] %}playing{% else %}on{% endif %}'
                 card:
                   !include
                     - ../components/entity_button.yaml

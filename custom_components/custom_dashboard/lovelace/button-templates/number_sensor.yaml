@@ -3,13 +3,17 @@ show_state: true
 color: var(--paper-item-icon-color)
 styles:
   card:
+    - padding: 5px
     - width: 87px
     - border-radius: 10px
   grid:
     - grid-template-areas: '"i s"'
-    - grid-template-columns: 45px 1fr
+    - grid-template-columns: 27px 1fr
     - grid-template-rows: 1fr
+  icon:
+    - width: 100%
+  img_cell:
+    - justify-content: start
   state:
     - justify-self: end
-    - padding-left: 0
-    - padding-right: 10px
+    - padding-right: 5px

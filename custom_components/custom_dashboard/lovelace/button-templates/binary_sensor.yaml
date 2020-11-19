@@ -10,6 +10,7 @@ double_tap_action:
   action: none
 styles:
   card:
+    - padding: 0
     - width: 45px
     - height: 45px
     - border-radius: 50%

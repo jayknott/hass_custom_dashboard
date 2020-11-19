@@ -79,10 +79,11 @@ styles:
     - width: 184px
   grid:
     - grid-template-areas: '"i s temp" "i s percip"'
-    - grid-template-columns: 45px 1fr min-content
+    - grid-template-columns: 35px 1fr min-content
     - grid-template-rows: 1fr min-content
   state:
     - justify-self: start
+    - padding-left: 10px
   icon:
     - color: >
         [[[
@@ -117,13 +118,9 @@ styles:
     temp:
       - justify-self: end
       - color: var(--secondary-text-color)
-      - padding-left: 0
-      - padding-right: 5px
-      - font-size: 12px
+      - font-size: 70%
     percip:
       - justify-self: end
       - color: var(--secondary-text-color)
-      - padding-left: 0
-      - padding-right: 5px
-      - font-size: 12px
+      - font-size: 70%
   

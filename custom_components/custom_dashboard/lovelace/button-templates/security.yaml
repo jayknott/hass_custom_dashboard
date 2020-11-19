@@ -1,4 +1,4 @@
-template: base
+template: entity
 show_state: true
 color_type: card
 styles:

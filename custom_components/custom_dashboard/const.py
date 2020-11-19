@@ -2,6 +2,8 @@ from homeassistant.const import (
     CONF_DEFAULT,
     STATE_CLOSED,
     STATE_LOCKED,
+    STATE_OFF,
+    STATE_ON,
     STATE_PLAYING,
 )
 
@@ -88,6 +90,7 @@ ENTITY_TYPES = [
 # Groups will be created with a 'security' prefix for each area and
 # entity type/area combination for tracking.
 SECURITY_ENTITY_TYPES = [
+    "battery",
     "lock",
     "motion",
     "opening",
@@ -100,6 +103,7 @@ SECURITY_ENTITY_TYPES = [
 SECURITY_ENTITY_TYPE_OFF_STATES = {
     "lock": [STATE_LOCKED],
     "opening": [STATE_CLOSED],
+    "battery": [">10"],
 }
 
 # Entity types that are tracked globally and per area.
@@ -107,6 +111,7 @@ SECURITY_ENTITY_TYPE_OFF_STATES = {
 # combination so tracking and notifications can be done. You don't need
 # to include it here if it is also included in SOMETHING_ON_ENTITY_TYPES.
 TRACKED_ENTITY_TYPES = [
+    "battery",
     "light",
     "motion",
 ]
@@ -117,6 +122,7 @@ TRACKED_ENTITY_TYPES = [
 # SOMETHING_ON_ENTITY_TYPES
 TRACKED_ENTITY_TYPE_ON_STATES = {
     "media_player": [STATE_PLAYING],
+    "battery": ["<10"],
 }
 
 # Group tracked entities together to track if something is on globally
