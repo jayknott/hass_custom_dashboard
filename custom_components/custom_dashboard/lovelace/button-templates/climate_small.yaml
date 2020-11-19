@@ -1,0 +1,98 @@
+template: number_sensor
+show_state: true
+state_display: >
+  [[[ return entity.state == 'heat_cool' ? '{{_custom_dashboard_trans.climate.heat_cool}}' : null ]]]
+icon: >
+  [[[
+      switch(entity.attributes.hvac_action) {
+        case 'heating':
+          return 'mdi:fire';
+        case 'cooling':
+          return 'mdi:snowflake';
+        case 'drying':
+          return 'mdi:weather-sunny';
+        case 'fan':
+          return 'mdi:fan';
+      }
+
+      switch(entity.state) {
+        case 'off':
+          return 'mdi:power-standby';
+        case 'heat':
+          return 'mdi:fire';
+        case 'cool':
+          return 'mdi:snowflake';
+      }
+
+      return 'mdi:thermostat';
+    ]]]
+custom_fields:
+  settings: >
+    [[[
+      let state = '';
+      switch(entity.state) {
+        case 'cool':
+          state = '{{_custom_dashboard_trans.climate.cool}}';
+          break;
+        case 'heat':
+          state = '{{_custom_dashboard_trans.climate.heat}}';
+          break;
+        case 'heat_cool':
+          state = '{{_custom_dashboard_trans.climate.heat_cool}}';
+          break;
+        case 'off':
+          state = '{{_custom_dashboard_trans.climate.off}}';
+          break;
+        default:
+          state = 'Unknown'
+      }
+
+      let label = `
+        <ha-icon
+          icon="mdi:thermostat"
+          style="width: 11px; height: 11px; color: var(--secondary-text-color)"
+        ></ha-icon>
+        <span>${state} ${entity.attributes.current_temperature}°</span>
+      `;
+
+      return label;
+    ]]]
+  humid: >
+    [[[
+      if (entity.attributes.current_humidity == null) return null;
+
+      return `
+        <ha-icon
+          icon="mdi:water-percent"
+          style="width: 11px; height: 11px; color: var(--secondary-text-color)"
+        ></ha-icon>
+        <span>${entity.attributes.current_humidity}%</span>
+      `;
+    ]]]
+styles:
+  card:
+    - width: 184px
+  grid:
+    - grid-template-areas: '"i s temp" "i s percip"'
+    - grid-template-columns: 35px 1fr min-content
+    - grid-template-rows: 1fr min-content
+  state:
+    - justify-self: start
+    - padding-left: 10px
+  icon:
+    - color: >
+        [[[
+          return entity.attributes.hvac_action == 'idle'
+            ? 'var(--paper-item-icon-color)'
+            : 'var(--paper-item-icon-active-color)'
+        ]]]
+  custom_fields:
+    settings:
+      - justify-self: end
+      - color: var(--secondary-text-color)
+      - font-size: 70%
+    humid:
+      - justify-self: end
+      - color: var(--secondary-text-color)
+      - font-size: 70%
+

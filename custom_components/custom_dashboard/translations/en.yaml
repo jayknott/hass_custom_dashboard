@@ -15,7 +15,10 @@ climate:
   one: Climate
   other: Climates
   # HVAC modes
+  cool: Cool
+  head: Heat
   heat_cool: Auto
+  off: 'Off'
 color:
   one: Color
   other: Colors
