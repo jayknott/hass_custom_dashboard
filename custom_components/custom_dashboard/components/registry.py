@@ -1,4 +1,4 @@
-"""Setup and manage area and entity registries."""
+"""Setup and manage area or entity registries."""
 import re
 from typing import Callable, Dict, Iterable, List, Optional
 
