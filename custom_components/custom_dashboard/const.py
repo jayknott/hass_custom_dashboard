@@ -35,6 +35,7 @@ HACS_PLUGINS = [
     "ljmerza/light-entity-card",
     "thomasloven/lovelace-card-mod",
     "kalkih/mini-media-player",
+    "thomasloven/lovelace-state-switch",
 ]
 
 # Custom cards that needs to be imported. These needs to be stored in ./lovelace/cards/[dirname].
@@ -88,7 +89,6 @@ ENTITY_TYPES = [
 # Groups will be created with a 'security' prefix for each area and
 # entity type/area combination for tracking.
 SECURITY_ENTITY_TYPES = [
-    "battery",
     "lock",
     "motion",
     "opening",
@@ -101,7 +101,6 @@ SECURITY_ENTITY_TYPES = [
 SECURITY_ENTITY_TYPE_OFF_STATES = {
     "lock": [STATE_LOCKED],
     "opening": [STATE_CLOSED],
-    "battery": [">10"],
 }
 
 # Entity types that are tracked globally and per area.
@@ -268,11 +267,13 @@ LOVELACE_FILENAME_DESTINATION = f"ui-lovelace-{LOVELACE_DASHBOARD_URL_PATH}.yaml
 LOVELACE_RESOURCE_TYPE_JS = "js"
 LOVELACE_RESOURCE_TYPE_MODULE = "module"
 
+SERVICE_REBUILD_COUNTERS = "rebuild_counters"
 SERVICE_SET_AREA = "set_area"
 SERVICE_SET_ENTITY = "set_entity"
 SERVICE_IDS = {
     SERVICE_SET_AREA: f"{DOMAIN}.{SERVICE_SET_AREA}",
     SERVICE_SET_ENTITY: f"{DOMAIN}.{SERVICE_SET_ENTITY}",
+    SERVICE_REBUILD_COUNTERS: f"{DOMAIN}.{SERVICE_REBUILD_COUNTERS}",
 }
 
 TRANSLATIONS_PATH = "translations/"

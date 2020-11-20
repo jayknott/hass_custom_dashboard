@@ -15,13 +15,12 @@ cards:
     card:
       type: vertical-stack
       cards:
-        - type: custom:custom-dashboard-flexbox-card
-          margin_bottom: '0'
-          cards:
-            - card:
-                !include
-                  - ../components/page_header.yaml
-                  - title: '{{ title }}'
+        - !include
+          - ../components/page_header.yaml
+          - title: '{{ title }}'
+        - !include
+          - ../components/caption_text.yaml
+          - content: {{ _custom_dashboard_trans.setting.entities_intro }}
         - type: entities
           entities:
             - entity: {{ _custom_dashboard_built_in_entities.entity_id_select }}

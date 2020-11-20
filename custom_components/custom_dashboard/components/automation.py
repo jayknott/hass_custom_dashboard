@@ -231,6 +231,7 @@ async def update_automations(force: bool = False):
                                                             'equalto',
                                                             states('{BUILT_IN_ENTITY_IDS[BUILT_IN_AREA_SELECT]}')
                                                         ) |
+                                                        default([none], true) |
                                                         first
                                         %}}
                                         {{% if area is not none %}}
@@ -257,6 +258,7 @@ async def update_automations(force: bool = False):
                                                             'equalto',
                                                             states('{BUILT_IN_ENTITY_IDS[BUILT_IN_AREA_SELECT]}')
                                                         ) |
+                                                        default([none], true) |
                                                         first
                                         %}}
                                         {{% if area is not none %}}
@@ -283,6 +285,7 @@ async def update_automations(force: bool = False):
                                                             'equalto',
                                                             states('{BUILT_IN_ENTITY_IDS[BUILT_IN_AREA_SELECT]}')
                                                         ) |
+                                                        default([none], true) |
                                                         first
                                         %}}
                                         {{% if area is not none %}}
@@ -304,6 +307,7 @@ async def update_automations(force: bool = False):
                                                         'equalto',
                                                         states('{BUILT_IN_ENTITY_IDS[BUILT_IN_AREA_SELECT]}')
                                                     ) |
+                                                    default([none], true) |
                                                     first
                                     %}}
                                     {{% if area is not none and not area.{CONF_VISIBLE} %}}
@@ -355,6 +359,7 @@ async def update_automations(force: bool = False):
                                                     states('{BUILT_IN_ENTITY_IDS[BUILT_IN_ENTITY_ID_SELECT]}')
                                                 ) |
                                                 list |
+                                                default([none], true) |
                                                 first
                                             ).{ATTR_AREA_ID}
                                         %}}
@@ -385,6 +390,7 @@ async def update_automations(force: bool = False):
                                                     states('{BUILT_IN_ENTITY_IDS[BUILT_IN_ENTITY_ID_SELECT]}')
                                                 ) |
                                                 list |
+                                                default([none], true) |
                                                 first
                                             ).{CONF_TYPE}
                                         %}}
@@ -414,6 +420,7 @@ async def update_automations(force: bool = False):
                                                     states('{BUILT_IN_ENTITY_IDS[BUILT_IN_ENTITY_ID_SELECT]}')
                                                 ) |
                                                 list |
+                                                default([none], true) |
                                                 first)
                                         %}}
                                         {{% if entity is not none %}}
@@ -437,6 +444,7 @@ async def update_automations(force: bool = False):
                                                 states('{BUILT_IN_ENTITY_IDS[BUILT_IN_ENTITY_ID_SELECT]}')
                                             ) |
                                             list |
+                                            default([none], true) |
                                             first)
                                     %}}
                                     {{% if entity is not none and not entity.{CONF_VISIBLE} %}}

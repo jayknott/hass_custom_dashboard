@@ -16,18 +16,23 @@ from homeassistant.helpers.storage import Store
 
 from .const import (
     ALL_ENTITY_TYPES,
+    CONF_ACTION,
     CONF_AREA,
     CONF_AREA_NAME,
     CONF_AREAS,
     CONF_ENTITIES,
     CONF_ENTITY,
     CONF_ORIGINAL_AREA_ID,
+    CONF_ORIGINAL_NAME,
     CONF_ORIGINAL_TYPE,
     CONF_SORT_ORDER,
+    CONF_UPDATE,
     CONF_VISIBLE,
     DEFAULT_ROOM_ICON,
     DEFAULT_SORT_ORDER,
     DOMAIN,
+    EVENT_AREA_SETTINGS_CHANGED,
+    EVENT_ENTITY_SETTINGS_CHANGED,
     EVENT_SETTINGS_CHANGED,
     PLATFORM_BINARY_SENSOR,
 )
@@ -86,6 +91,54 @@ async def save_setting(setting_type: str, call: ServiceCall) -> None:
         get_base().hass.bus.fire(EVENT_SETTINGS_CHANGED)
 
 
+async def remove_area_settings(area_id: str) -> None:
+    """Remove the settings for an area."""
+
+    hass = get_base().hass
+    store = Store(hass, 1, f"{DOMAIN}.{CONF_AREAS}")
+    data: Optional[AreaSettingsRegistry] = await store.async_load()
+
+    if area_id in data:
+        del data[area_id]
+
+    await store.async_save(data)
+
+
+async def remove_area_from_entities(area_id: str) -> None:
+    """Remove the area_id from all entities."""
+
+    hass = get_base().hass
+    store = Store(hass, 1, f"{DOMAIN}.{CONF_ENTITIES}")
+    data: Optional[EntitySettingsRegistry] = await store.async_load()
+
+    to_delete = []
+
+    for entity_id in data.keys():
+        if data[entity_id].get(ATTR_AREA_ID) == area_id:
+            if len(data[entity_id]) == 1:
+                to_delete.append(entity_id)
+            else:
+                del data[entity_id][ATTR_AREA_ID]
+
+    for entity_id in to_delete:
+        del data[entity_id]
+
+    await store.async_save(data)
+
+
+async def remove_entity_settings(entity_id: str) -> None:
+    """Remove the settings for an entity."""
+
+    hass = get_base().hass
+    store = Store(hass, 1, f"{DOMAIN}.{CONF_ENTITIES}")
+    data: Optional[EntitySettingsRegistry] = await store.async_load()
+
+    if entity_id in data:
+        del data[entity_id]
+
+    await store.async_save(data)
+
+
 async def _update_area(call: ServiceCall) -> bool:
     """Update the settings for an area."""
 
@@ -103,9 +156,16 @@ async def _update_area(call: ServiceCall) -> bool:
     await _update_key_value(data, call, area_id, ATTR_NAME, area_name)
     await _update_key_value(data, call, area_id, CONF_ICON, DEFAULT_ROOM_ICON)
     await _update_key_value(data, call, area_id, CONF_SORT_ORDER, DEFAULT_SORT_ORDER)
-    await _update_key_value(hass, data, call, area_id, CONF_VISIBLE, True)
+    await _update_key_value(data, call, area_id, CONF_VISIBLE, True)
 
-    return await _store_data(store, data, area_id)
+    if await _store_data(store, data, area_id):
+        hass.bus.fire(
+            EVENT_AREA_SETTINGS_CHANGED,
+            {CONF_ACTION: CONF_UPDATE, ATTR_AREA_ID: area_id},
+        )
+        return True
+
+    return False
 
 
 async def _update_entity(call: ServiceCall) -> bool:
@@ -130,7 +190,14 @@ async def _update_entity(call: ServiceCall) -> bool:
     )
     await _update_key_value(data, call, entity_id, CONF_VISIBLE, True)
 
-    return await _store_data(store, data, entity_id)
+    if await _store_data(store, data, entity_id):
+        hass.bus.fire(
+            EVENT_ENTITY_SETTINGS_CHANGED,
+            {CONF_ACTION: CONF_UPDATE, ATTR_AREA_ID: entity_id},
+        )
+        return True
+
+    return False
 
 
 async def _get_area_id_by_name(area_name: Optional[str]) -> Optional[str]:
@@ -141,7 +208,11 @@ async def _get_area_id_by_name(area_name: Optional[str]) -> Optional[str]:
 
     if area_name is not None and area_name != "":
         area = next(
-            (area_obj for area_obj in base.areas if area_obj[ATTR_NAME] == area_name),
+            (
+                area_obj
+                for area_obj in base.areas
+                if area_obj[CONF_ORIGINAL_NAME] == area_name
+            ),
             None,
         )
     else:

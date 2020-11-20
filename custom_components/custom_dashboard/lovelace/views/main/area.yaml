@@ -70,6 +70,7 @@ cards:
           - ../components/page_header.yaml
           - title: {{ room_name }}
 
+        {% if entities and entities | length > 0 %}
         {% if (motion_sensors and (motion_sensors | length > 0)) or (doorbells and (doorbells | length > 0)) %}
         - type: custom:custom-dashboard-flexbox-card
           cards:
@@ -266,4 +267,10 @@ cards:
                       room_name: >
                         {{ room_name }}
               {% endfor %}
+        {% endif %}
+
+        {% else %}
+        - !include
+            - ../components/caption_text.yaml
+            - content: {{ _custom_dashboard_trans.device.none }}
         {% endif %}

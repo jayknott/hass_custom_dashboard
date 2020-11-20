@@ -27,6 +27,7 @@ cards:
         - !include
           - ../components/page_header.yaml
           - title: {{ _custom_dashboard_trans.security.one }}
+        {% if (security and security | length > 0) or (security_sensors and security_sensors | length > 0) %}
         {% if security and security | length > 0 %}
         - type: custom:custom-dashboard-flexbox-card
           cards:
@@ -53,4 +54,9 @@ cards:
                     - template: security
                       entity: {{ device.entity_id }}
               {% endfor %}
+        {% endif %}
+        {% else %}
+        - !include
+            - ../components/caption_text.yaml
+            - content: {{ _custom_dashboard_trans.device.none }}
         {% endif %}

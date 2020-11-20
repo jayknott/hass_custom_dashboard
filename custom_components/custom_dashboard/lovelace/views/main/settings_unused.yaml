@@ -41,6 +41,7 @@ cards:
         - !include
           - ../components/page_header.yaml
           - title: {{ _custom_dashboard_trans.setting.unused }}
+        {% if types and types | length > 0 %}
         {% for type in types %}
         - !include
           - ../components/section_header.yaml
@@ -55,3 +56,8 @@ cards:
                       entity: {{ device.entity_id }}
               {% endfor %}
         {% endfor %}
+        {% else %}
+        - !include
+          - ../components/caption_text.yaml
+          - content: {{ _custom_dashboard_trans.device.none }}
+        {% endif %}

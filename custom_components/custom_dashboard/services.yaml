@@ -1,3 +1,5 @@
+rebuild_counters:
+  description: "Rebuild the device counters after changes to the registry."
 set_area:
   description: "Update the settings for an area."
   fields:

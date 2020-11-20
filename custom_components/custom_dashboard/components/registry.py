@@ -72,6 +72,86 @@ async def update_entity_registry() -> None:
     get_base().entities = await hass_entities()
 
 
+async def add_entity_to_registry(entity_id: str) -> None:
+    """Add an entity to the registry"""
+
+    base = get_base()
+
+    entities = base.entities
+    entity: Optional[RegistryEntry] = base.hass.data["entity_registry"].async_get(
+        entity_id
+    )
+    entity_type = original_entity_type(entity_id)
+
+    if entity.disabled:
+        return
+
+    entities.append(
+        {
+            CONF_ENTITY_ID: entity_id,
+            ATTR_AREA_ID: entity.area_id,
+            CONF_ORIGINAL_AREA_ID: entity.area_id,
+            ATTR_NAME: entity.name,
+            CONF_TYPE: entity_type,
+            CONF_ORIGINAL_TYPE: entity_type,
+            CONF_SORT_ORDER: DEFAULT_SORT_ORDER,
+            CONF_VISIBLE: True,
+        }
+    )
+
+
+async def remove_entity_from_registry(entity_id: str) -> None:
+    """Remove an entity from the registry"""
+
+    base = get_base()
+
+    entities = base.entities
+    for entity in entities:
+        if entity[CONF_ENTITY_ID] == entity_id:
+            entities.remove(entity)
+            break
+
+
+async def update_entity_from_registry(entity_id: str) -> None:
+    """Update an entity from the registry"""
+
+    base = get_base()
+    hass = base.hass
+    store = Store(hass, 1, f"{DOMAIN}.{CONF_ENTITIES}")
+    data: Optional[EntitySettingsRegistry] = await store.async_load()
+    if data is None:
+        data = {}
+
+    entities = base.entities
+    entity: Optional[RegistryEntry] = hass.data["entity_registry"].async_get(entity_id)
+
+    entity_data = data.get(entity_id, {})
+    entity_state = base.hass.states.get(entity_id)
+    entity_name = entity_state.name if entity_state is not None else None
+    entity_type = original_entity_type(entity_id)
+    if entity_name is None:
+        entity_name = (
+            entity.name
+            if entity.name is not None
+            else entity.entity_id.split(".")[-1].replace("_", " ").title()
+        )
+
+    await remove_entity_from_registry(entity_id)
+
+    entities.append(
+        {
+            CONF_ENTITY_ID: entity.entity_id,
+            ATTR_AREA_ID: entity_data.get(ATTR_AREA_ID, entity.area_id),
+            CONF_ORIGINAL_AREA_ID: entity.area_id,
+            ATTR_NAME: entity_name,
+            CONF_TYPE: entity_data.get(CONF_TYPE, entity_type),
+            CONF_ORIGINAL_TYPE: entity_type,
+            CONF_SORT_ORDER: entity_data.get(CONF_SORT_ORDER, DEFAULT_SORT_ORDER),
+            CONF_VISIBLE: entity_data.get(CONF_VISIBLE, True),
+        }
+    )
+
+
 async def hass_areas() -> List[AreaSettings]:
     """A dictionary list for the HA area registry used for this integrations domain data."""
 
@@ -208,7 +288,7 @@ async def hass_entities() -> List[EntitySettings]:
                     entity_name = (
                         entity.name
                         if entity.name is not None
-                        else entity.entity_id.split(".")[-1]
+                        else entity.entity_id.split(".")[-1].replace("_", " ").title()
                     )
                 entity_item: EntitySettings = {
                     CONF_ENTITY_ID: entity.entity_id,
