@@ -4,7 +4,7 @@ title: Custom Dashboard
 
 automation:
   one: Automation
-  other: Automations
+  other: Automation Scripts
 battery:
   all: All Batteries
   all_off: All batteries are at sufficient levels
