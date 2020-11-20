@@ -22,6 +22,7 @@
 {%
   set handled_types = [
     'all_lights',
+    'automation',
     'camera',
     'climate',
     'climate_main',
@@ -35,6 +36,7 @@
     'remote',
     'remote_always_on',
     'remote_button',
+    'script',
     'security_lock',
     'security_motion',
     'security_opening',
@@ -277,12 +279,12 @@ cards:
           - title: {{ _custom_dashboard_trans.automation.one }}
         - type: custom:custom-dashboard-flexbox-card
           cards:
-              {% for device in other_devices %}
+              {% for automation in automations %}
               - card:
                   !include
                     - ../components/entity_button.yaml
                     - template: device
-                      entity: {{ device.entity_id }}
+                      entity: {{ automation.entity_id }}
                       room_name: >
                         {{ room_name }}
               {% endfor %}
