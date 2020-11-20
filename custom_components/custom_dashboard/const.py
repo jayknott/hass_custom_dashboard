@@ -60,6 +60,7 @@ JINJA_VARIABLES = {}
 ENTITY_TYPES = [
     "",
     "all_lights",
+    "automation",
     "battery",
     "camera",
     "climate",
@@ -75,6 +76,7 @@ ENTITY_TYPES = [
     "remote",
     "remote_always_on",
     "remote_button",
+    "script",
     "sensor",
     "switch",
     "switch_always_on",

@@ -16,6 +16,8 @@
 {% set remote_buttons = entities | selectattr('type', 'equalto', 'remote_button') | sort(attribute='sort_order,name') | list %}
 {% set media_players = entities | selectattr('type', 'in', ['media_player', 'media_player_no_volume']) | sort(attribute='sort_order,name') | list %}
 {% set cameras = entities | selectattr('type', 'equalto', 'camera') | sort(attribute='sort_order,name') | list %}
+{% set automations = entities | selectattr('type', 'in', ['automation', 'script']) | sort(attribute='sort_order,name') | list %}
+
 
 {%
   set handled_types = [
@@ -256,6 +258,23 @@ cards:
         {% endif %}
 
         {% if other_devices and (other_devices | length) > 0 %}
+        - type: custom:custom-dashboard-flexbox-card
+          cards:
+              {% for device in other_devices %}
+              - card:
+                  !include
+                    - ../components/entity_button.yaml
+                    - template: device
+                      entity: {{ device.entity_id }}
+                      room_name: >
+                        {{ room_name }}
+              {% endfor %}
+        {% endif %}
+
+        {% if automations and (automations | length) > 0 %}
+        - !include
+          - ../components/section_header.yaml
+          - title: {{ _custom_dashboard_trans.automation.one }}
         - type: custom:custom-dashboard-flexbox-card
           cards:
               {% for device in other_devices %}

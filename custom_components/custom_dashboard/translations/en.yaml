@@ -105,6 +105,9 @@ room:
 save:
   one: Save
   other: Saves
+script:
+  one: Script
+  other: Scripts
 security:
   one: Security
   other: Security
